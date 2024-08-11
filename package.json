@@ -1,0 +1,39 @@
+{
+  "name": "price-tracker-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev:debug": "nodemon --watch 'src/**/*.ts' --exec 'node --inspect -r ts-node/register' src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.11.0",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "4.19.2",
+    "http-status-codes": "^2.3.0",
+    "json-web-token": "^3.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.5.2",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsc-watch": "^6.2.0",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "replicate": "^0.32.0"
+  }
+}
