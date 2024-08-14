@@ -4,27 +4,29 @@ import {
   AIModelInput,
   AIModelOutput,
 } from "../../domain/entities/abstractAIModel";
-
+import {
+  DefaultOutputStrategy,
+  OutputStrategy,
+  StreamingOutputStrategy,
+} from "./Strategy/StategyOutPut";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 export class ReplicateAdapter extends AbstractAIModel {
   private readonly replicate: Replicate;
+  private outputStrategy: OutputStrategy;
 
-  constructor(organization: string, modelName: string) {
+  constructor(
+    organization: string,
+    modelName: string,
+    outputStrategy?: OutputStrategy
+  ) {
     super(organization, modelName);
     this.replicate = new Replicate({
       auth: process.env.REPLICATE_API_TOKEN,
     });
-  }
-
-  public async generate(
-    prompt: string,
-    config: Record<string, unknown>
-  ): Promise<AIModelOutput> {
-    const input: AIModelInput = { prompt, config };
-    return this.shouldUseStreaming() ? this.stream(input) : this.run(input);
+    this.outputStrategy = outputStrategy || new DefaultOutputStrategy();
   }
 
   shouldUseStreaming(): boolean {
@@ -34,20 +36,28 @@ export class ReplicateAdapter extends AbstractAIModel {
   prepareInput(input: AIModelInput): Record<string, unknown> {
     const { prompt, config } = input;
 
-    if (this.modelName.includes("sdxl")) {
-      return { prompt, ...config };
-    }
-
-    if (this.modelName.includes("llama")) {
-      return { text: prompt, ...config };
-    }
-
-    return input;
+    return { prompt, ...config };
   }
 
-  async run(input: AIModelInput): Promise<AIModelOutput> {
+  public async generate(
+    prompt: string,
+    config: Record<string, unknown>
+  ): Promise<AIModelOutput> {
+    const input: AIModelInput = { prompt, config };
+    const rawOutput = await this.executeModel(input);
+    return await this.outputStrategy.processOutput(rawOutput);
+  }
+
+  async executeModel(input: AIModelInput): Promise<any> {
     const preparedInput = this.prepareInput(input);
-    return this.replicate.run(this.getModelString(), { input: preparedInput });
+    const modelString = this.getModelString();
+
+    if (this.shouldUseStreaming()) {
+      this.outputStrategy = new StreamingOutputStrategy();
+      return this.replicate.stream(modelString, { input: preparedInput });
+    } else {
+      return this.replicate.run(modelString, { input: preparedInput });
+    }
   }
 
   async stream(input: AIModelInput): Promise<AIModelOutput> {
