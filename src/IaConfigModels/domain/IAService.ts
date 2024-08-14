@@ -10,9 +10,32 @@ import { Project } from "./interfaces/Project.interface";
 
 export class IAService implements AIService {
   private readonly IArepository: IARepository;
+  private user: User;
 
   constructor(IaRepository: IARepository, user: User) {
     this.IArepository = IaRepository;
+    this.user = user;
+  }
+  async getAvailableIA(AIType: string): Promise<Array<Object>> {
+    try {
+      const modelsAvaiabels = await this.IArepository.getAvailableIA(AIType);
+      return modelsAvaiabels;
+    } catch (error) {
+      if (error instanceof Error) throw new Error(error.message);
+
+      throw new Error("something went wrong with projects");
+    }
+  }
+  async getProjects(userId: string): Promise<Array<Project>> {
+    try {
+      const projects = await this.IArepository.getProjects(userId);
+      const projectJson = projects.map((project) => project.toJSON());
+      return projectJson;
+    } catch (error) {
+      if (error instanceof Error) throw new Error(error.message);
+
+      throw new Error("something went wrong with projects");
+    }
   }
 
   async getById(IdIA: string): Promise<Project | Error> {
@@ -31,7 +54,10 @@ export class IAService implements AIService {
 
   async save(project: Project): Promise<Project> {
     try {
-      const newProject = await this.IArepository.save(project);
+      const newProject = await this.IArepository.save({
+        ...project,
+        userId: this.user.getId(),
+      });
       return newProject.toJSON();
     } catch (error) {
       if (error instanceof Error) throw new Error(error.message);

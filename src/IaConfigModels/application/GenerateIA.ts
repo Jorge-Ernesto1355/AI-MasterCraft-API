@@ -1,4 +1,4 @@
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import { iaServiceFactory } from "../infrastructure/dependecies";
 import { StatusCodes } from "http-status-codes";
 
@@ -22,7 +22,7 @@ export class GenerateIA {
 
       return res.status(StatusCodes.OK).json(OutPutIA);
     } catch (error) {
-      return this.handleError(error, response);
+      return this.handleError(error, res);
     }
   }
 

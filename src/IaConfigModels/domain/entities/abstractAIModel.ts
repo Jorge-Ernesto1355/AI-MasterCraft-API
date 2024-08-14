@@ -3,7 +3,8 @@ export interface AIModelInput {
 }
 
 export interface AIModelOutput {
-  [key: string]: any;
+  output: string;
+  stream?: AsyncGenerator<string, void, unknown>;
 }
 
 export interface AIModelConfig {
@@ -28,7 +29,7 @@ export abstract class AbstractAIModel {
     config?: AIModelConfig
   ): Promise<AIModelOutput>;
 
-  protected abstract run(input: AIModelInput): Promise<AIModelOutput>;
+  protected abstract executeModel(input: AIModelInput): Promise<AIModelOutput>;
 
   protected abstract stream(input: AIModelInput): Promise<AIModelOutput>;
 

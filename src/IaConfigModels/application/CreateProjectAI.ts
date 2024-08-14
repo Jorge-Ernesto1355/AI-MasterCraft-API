@@ -6,14 +6,12 @@ import { StatusCodes } from "http-status-codes";
 export class CreateProjectAI {
   async run(req: Request, res: Response) {
     try {
-      const { projectName, description, organization, modelName, config } =
-        req.body;
+      const { projectName, description, AImodelId, config } = req.body;
       this.validateArguments({
         projectName,
         description,
-        organization,
-        modelName,
         config,
+        AImodelId,
       });
 
       const IAService = await this.createIAService(req.params.userId);
@@ -21,9 +19,8 @@ export class CreateProjectAI {
       const newProjectAI = await IAService.save({
         projectName,
         description,
-        organization,
-        modelName,
         config,
+        AImodelId,
       });
       if (newProjectAI instanceof Error) throw new Error(newProjectAI.message);
 
@@ -41,14 +38,8 @@ export class CreateProjectAI {
     return IAService;
   }
 
-  private validateArguments({
-    projectName,
-    description,
-    organization,
-    modelName,
-    config,
-  }: Project) {
-    if (!projectName || !description || !organization || !modelName || !config)
+  private validateArguments({ projectName, description, AImodelId }: Project) {
+    if (!projectName || !description || !AImodelId)
       throw new Error("Arguments must be defined");
   }
 

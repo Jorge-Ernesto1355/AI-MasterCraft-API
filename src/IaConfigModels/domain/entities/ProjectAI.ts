@@ -7,20 +7,26 @@ class ProjectIa {
   private readonly organization: string;
   private readonly modelName: string;
   private readonly model: IAModel;
+  private readonly IAType: string;
+  private readonly userId: string;
 
   constructor(
     projectName: string,
     description: string,
     organization: string,
     modelName: string,
-    config: any
+    config: any,
+    IAType: string,
+    userId: string
   ) {
     this.projectName = projectName;
     this.description = description;
     this.organization = organization;
     this.modelName = modelName;
     this.config = config;
+    this.IAType = IAType;
     this.model = new IAModel(organization, modelName, config);
+    this.userId = userId;
   }
 
   public getProjectName(): string {
@@ -43,8 +49,16 @@ class ProjectIa {
     return this.modelName;
   }
 
+  public getIAType(): string {
+    return this.IAType;
+  }
+
   public run(prompt: string) {
     return this.model.run(prompt);
+  }
+
+  public getUserId(): string {
+    return this.userId;
   }
 
   public toJSON() {
@@ -54,6 +68,8 @@ class ProjectIa {
       organization: this.organization,
       modelName: this.modelName,
       config: this.config,
+      IAType: this.IAType,
+      userId: this.userId,
     };
   }
 }

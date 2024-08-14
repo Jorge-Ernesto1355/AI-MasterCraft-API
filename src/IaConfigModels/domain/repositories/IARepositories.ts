@@ -8,6 +8,12 @@ export class IARepository implements InterfaceIARepository {
   constructor(repository: InterfaceIARepository) {
     this.repository = repository;
   }
+  getAvailableIA(AIType: string) {
+    return this.repository.getAvailableIA(AIType);
+  }
+  getProjects(userId: string): Promise<Array<ProjectIa>> {
+    return this.repository.getProjects(userId);
+  }
 
   getIAById(IdIA: string): Promise<ProjectIa | Error> {
     return this.repository.getIAById(IdIA);
