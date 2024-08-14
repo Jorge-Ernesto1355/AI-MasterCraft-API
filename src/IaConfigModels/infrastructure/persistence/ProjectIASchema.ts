@@ -1,22 +1,18 @@
 import mongoose, { Document, Schema } from "mongoose";
+import { Project } from "../../domain/interfaces/Project.interface";
 
-export interface ProjectIa extends Document {
-  projectName: string;
-  description: string;
-  config: any;
-  organization: string;
-  modelName: string;
-  hash: string;
-}
+interface ProjectDocument extends Project, Document {}
 
 const ProjectIaSchema = new Schema({
   projectName: { type: String, maxLength: 30 },
   description: { type: String, maxLength: 100 },
-  organization: { type: String },
-  modelName: { type: String },
-  hash: { type: String },
+  AImodelId: { ref: "AIModel", type: Schema.Types.ObjectId },
+  userId: { ref: "User", type: Schema.Types.ObjectId },
   config: {},
 });
 
-const projectIASchema = mongoose.model<ProjectIa>("ProjectIa", ProjectIaSchema);
+const projectIASchema = mongoose.model<ProjectDocument>(
+  "ProjectIa",
+  ProjectIaSchema
+);
 export default projectIASchema;
