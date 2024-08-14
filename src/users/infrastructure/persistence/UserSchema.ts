@@ -30,6 +30,12 @@ const UserSchema = new Schema({
   },
   accessToken: { type: String },
   refreshToken: { type: String },
+  projectsIA: [
+    {
+      ref: "ProjectIa",
+      type: Schema.Types.ObjectId,
+    },
+  ],
 });
 
 const UserModel = mongoose.model<IUser>("User", UserSchema);
