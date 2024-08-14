@@ -7,6 +7,7 @@ export class ProjectIaMapper {
       description: projectIa.getDescription(),
       organization: projectIa.getOrganization(),
       modelName: projectIa.getModelName(),
+      IAType: projectIa.getIAType(),
       config: JSON.stringify(projectIa.getConfig()),
     };
   }
@@ -17,7 +18,9 @@ export class ProjectIaMapper {
       entity.description,
       entity.organization,
       entity.modelName,
-      entity.config
+      entity.config,
+      entity.IAType,
+      entity.userid
     );
   }
 }
