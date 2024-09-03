@@ -8,6 +8,12 @@ const ProjectIaSchema = new Schema({
   description: { type: String, maxLength: 100 },
   AImodelId: { ref: "AIModel", type: Schema.Types.ObjectId },
   userId: { ref: "User", type: Schema.Types.ObjectId },
+  messages: [
+    {
+      ref: "Message",
+      type: Schema.Types.ObjectId,
+    },
+  ],
   config: {},
 });
 
