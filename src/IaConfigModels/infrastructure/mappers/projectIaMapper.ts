@@ -3,24 +3,25 @@ import ProjectIa from "../../domain/entities/ProjectAI";
 export class ProjectIaMapper {
   static toPersistence(projectIa: ProjectIa): any {
     return {
-      projectName: projectIa.getProjectName(),
-      description: projectIa.getDescription(),
-      organization: projectIa.getOrganization(),
-      modelName: projectIa.getModelName(),
-      IAType: projectIa.getIAType(),
-      config: JSON.stringify(projectIa.getConfig()),
+      projectName: projectIa.projectName,
+      description: projectIa.description,
+      organization: projectIa.organization,
+      modelName: projectIa.modelName,
+      IAType: projectIa.IAType,
+      config: JSON.stringify(projectIa.configModel),
     };
   }
 
   static toDomain(entity: any): ProjectIa {
-    return new ProjectIa(
-      entity.projectName,
-      entity.description,
-      entity.organization,
-      entity.modelName,
-      entity.config,
-      entity.IAType,
-      entity.userid
-    );
+    return new ProjectIa({
+      projectName: entity.projectName,
+      description: entity.description,
+      organization: entity.organization,
+      modelName: entity.modelName,
+      config: entity.config,
+      IAType: entity.IAType,
+      userId: entity.userId,
+      AImodelId: entity.AImodelId,
+    });
   }
 }
