@@ -1,13 +1,25 @@
 import { Email } from "../values/Email";
 import { Password } from "../values/Password";
 
+export interface UserDTO {
+  id: string;
+  username: string;
+  email: string;
+  password?: string; // Inclúyelo solo si es relevante para tu caso
+}
+
 export class User {
   private readonly _id: string;
   private readonly username: string;
   private readonly email: Email;
-  private password: Password;
+  private password?: Password;
 
-  constructor(_id: string, username: string, email: Email, password: Password) {
+  constructor(
+    _id: string,
+    username: string,
+    email: Email,
+    password?: Password
+  ) {
     this._id = _id;
     this.email = email;
     this.username = username;
@@ -34,7 +46,7 @@ export class User {
   }
 
   public getPassword() {
-    return this.password.getPassword();
+    return this.password?.getPassword();
   }
   public getEmail() {
     return this.email.getEmail();
@@ -49,14 +61,14 @@ export class User {
   }
 
   public comparePassword(password: string) {
-    return this.password.comparePassword(password);
+    return this.password?.comparePassword(password);
   }
 
   public async updatePassword(newPlainTextPassword: string): Promise<void> {
     this.password = await Password.create(newPlainTextPassword);
   }
 
-  public toJSON(): object {
+  public toJSON(): UserDTO {
     return {
       id: this._id,
       username: this.username,
