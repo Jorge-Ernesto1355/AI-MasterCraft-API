@@ -1,76 +1,71 @@
 import { IAModel } from "./IAModel";
 
+interface ProjectIaConfig {
+  projectName: string;
+  description: string;
+  organization: string;
+  modelName: string;
+  config: any;
+  IAType: string;
+  userId: string;
+  AImodelId: string;
+}
+
 class ProjectIa {
-  private readonly projectName: string;
-  private readonly description: string;
-  private readonly config: any;
-  private readonly organization: string;
-  private readonly modelName: string;
   private readonly model: IAModel;
-  private readonly IAType: string;
-  private readonly userId: string;
+  private readonly config: ProjectIaConfig;
 
-  constructor(
-    projectName: string,
-    description: string,
-    organization: string,
-    modelName: string,
-    config: any,
-    IAType: string,
-    userId: string
-  ) {
-    this.projectName = projectName;
-    this.description = description;
-    this.organization = organization;
-    this.modelName = modelName;
+  constructor(config: ProjectIaConfig) {
     this.config = config;
-    this.IAType = IAType;
-    this.model = new IAModel(organization, modelName, config);
-    this.userId = userId;
-  }
-
-  public getProjectName(): string {
-    return this.projectName;
-  }
-
-  public getDescription(): string {
-    return this.description;
-  }
-
-  public getConfig(): any {
-    return this.config;
-  }
-
-  public getOrganization(): string {
-    return this.organization;
-  }
-
-  public getModelName(): string {
-    return this.modelName;
-  }
-
-  public getIAType(): string {
-    return this.IAType;
+    this.model = new IAModel(
+      config.AImodelId,
+      config.organization,
+      config.modelName,
+      config.config
+    );
   }
 
   public run(prompt: string) {
     return this.model.run(prompt);
   }
 
-  public getUserId(): string {
-    return this.userId;
+  public getModelToJson() {
+    return {
+      id: this.config.AImodelId,
+      organization: this.config.organization,
+      modelName: this.config.modelName,
+      config: this.config.config,
+    };
   }
 
   public toJSON() {
-    return {
-      projectName: this.projectName,
-      description: this.description,
-      organization: this.organization,
-      modelName: this.modelName,
-      config: this.config,
-      IAType: this.IAType,
-      userId: this.userId,
-    };
+    return { ...this.config };
+  }
+
+  // Getters
+  get projectName(): string {
+    return this.config.projectName;
+  }
+  get description(): string {
+    return this.config.description;
+  }
+  get organization(): string {
+    return this.config.organization;
+  }
+  get modelName(): string {
+    return this.config.modelName;
+  }
+  get configModel(): string {
+    return this.config.config;
+  }
+  get IAType(): string {
+    return this.config.IAType;
+  }
+  get userId(): string {
+    return this.config.userId;
+  }
+  get ModelId(): string {
+    return this.config.AImodelId;
   }
 }
 
