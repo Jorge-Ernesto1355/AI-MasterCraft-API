@@ -1,21 +1,55 @@
-import { User } from "../../users/domain/entities/User";
+import { User, UserDTO } from "../../users/domain/entities/User";
 import { NotFoundUser, NotFoundUserMsg } from "../../users/domain/ErrorsUser";
 import { userRepository } from "../../users/domain/interfaces/userRepository.interface";
+import { IAModelDTO } from "./entities/IAModel";
+import { MessageDTO } from "./entities/Message";
 import ProjectIa from "./entities/ProjectAI";
 
 import { IA_NOT_FOUND, IA_NOT_FOUND_MSG } from "./IAErrors";
 import { IARepository } from "./interfaces/IARepository.interface";
 import { AIService } from "./interfaces/IAServices.interface";
 import { Project } from "./interfaces/Project.interface";
+import ContentFormatter from "./utils/ContentFormatter";
+
+export interface createMessageProps {
+  user: UserDTO | null;
+  AImodel: IAModelDTO | null;
+  output: any;
+  prompt?: string;
+  isIA: boolean;
+  projectId: string;
+}
 
 export class IAService implements AIService {
   private readonly IArepository: IARepository;
   private user: User;
+  private contentFormatter: ContentFormatter;
 
   constructor(IaRepository: IARepository, user: User) {
     this.IArepository = IaRepository;
     this.user = user;
+    this.contentFormatter = new ContentFormatter();
   }
+  async createMessage({
+    user,
+    AImodel,
+    output,
+    isIA,
+    projectId,
+  }: createMessageProps) {
+    try {
+      return await this.IArepository.createMessage({
+        user,
+        AImodel,
+        output,
+        isIA,
+        projectId,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getAvailableIA(AIType: string): Promise<Array<Object>> {
     try {
       const modelsAvaiabels = await this.IArepository.getAvailableIA(AIType);
@@ -33,18 +67,14 @@ export class IAService implements AIService {
       return projectJson;
     } catch (error) {
       if (error instanceof Error) throw new Error(error.message);
-
       throw new Error("something went wrong with projects");
     }
   }
 
   async getById(IdIA: string): Promise<Project | Error> {
     try {
-      const IAProject = await this.IArepository.getIAById(IdIA);
-
-      if (IAProject instanceof IA_NOT_FOUND) throw new Error(IA_NOT_FOUND_MSG);
-
-      return IAProject.toJSON();
+      const projectIA = await this.getValidProjectIA(IdIA);
+      return projectIA.toJSON();
     } catch (error) {
       if (error instanceof Error) return new Error(error.message);
 
@@ -64,22 +94,51 @@ export class IAService implements AIService {
       throw new Error("Something went wrong");
     }
   }
-
-  async generateIA(projectId: string, prompt: string): Promise<Object> {
+  async generateIAMessage(
+    projectId: string,
+    prompt: string
+  ): Promise<MessageDTO> {
     try {
-      const projectIA = await this.IArepository.getIAById(projectId);
-      if (projectIA instanceof IA_NOT_FOUND) throw new Error(IA_NOT_FOUND_MSG);
-
-      if (!(projectIA instanceof ProjectIa)) throw new Error("Invalid project");
-
+      const projectIA = await this.getValidProjectIA(projectId);
       const outputIA = await projectIA.run(prompt);
 
-      return outputIA;
-    } catch (error) {
-      if (error instanceof Error) throw new Error(error.message);
+      // creation of user message
+      await this.createMessage({
+        output: this.contentFormatter.format({ output: prompt }),
+        user: this.user.toJSON(),
+        isIA: false,
+        AImodel: null,
+        projectId,
+      });
 
-      throw new Error("Something went wrong");
+      return this.createMessage({
+        output: this.contentFormatter.format(outputIA),
+        isIA: true,
+        user: null,
+        AImodel: projectIA.getModelToJson(),
+        projectId,
+      });
+    } catch (error) {
+      this.handleError(error);
     }
+  }
+
+  private async getValidProjectIA(projectId: string): Promise<ProjectIa> {
+    const projectIA = await this.IArepository.getIAById(projectId);
+    if (projectIA instanceof IA_NOT_FOUND) {
+      throw new Error(IA_NOT_FOUND_MSG);
+    }
+    if (!(projectIA instanceof ProjectIa)) {
+      throw new Error("Invalid project");
+    }
+    return projectIA;
+  }
+
+  private handleError(error: unknown): never {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error("Something went wrong");
   }
 }
 
@@ -98,9 +157,7 @@ export class IaServiceFactory {
 
       return new IAService(this.IArepository, user);
     } catch (error) {
-      if (error instanceof Error) throw new Error(error.message);
-
-      throw new Error("Something went wrong with the project");
+      throw new Error("Something went wrong with the creation of service");
     }
   }
 }
