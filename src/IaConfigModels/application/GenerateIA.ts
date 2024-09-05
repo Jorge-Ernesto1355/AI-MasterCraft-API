@@ -18,7 +18,10 @@ export class GenerateIA {
       if (projectIaService instanceof Error)
         throw new Error(projectIaService.message);
 
-      const OutPutIA = await projectIaService.generateIA(projectId, prompt);
+      const OutPutIA = await projectIaService.generateIAMessage(
+        projectId,
+        prompt
+      );
 
       return res.status(StatusCodes.OK).json(OutPutIA);
     } catch (error) {
