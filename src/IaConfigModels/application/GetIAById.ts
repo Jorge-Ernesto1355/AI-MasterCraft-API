@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { iaServiceFactory } from "../infrastructure/dependecies";
+import { AIService } from "../domain/interfaces/IAServices.interface";
 
 export class GetIAById {
   async run(req: Request, res: Response): Promise<Response> {
@@ -40,8 +41,8 @@ export class GetIAById {
     return IAService;
   }
 
-  private async getProjectIA(IAService: any, projectIAId: string) {
-    const projectIa = await IAService.getIAById(projectIAId);
+  private async getProjectIA(IAService: AIService, projectIAId: string) {
+    const projectIa = await IAService.getById(projectIAId);
     if (projectIa instanceof Error) {
       throw new Error("Project IA not found");
     }
