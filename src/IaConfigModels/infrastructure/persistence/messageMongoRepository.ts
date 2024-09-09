@@ -1,4 +1,5 @@
-import UserModel from "../../../users/infrastructure/persistence/UserSchema";
+
+import { PaginateResult } from "mongoose";
 import {
   MessageDTO,
   Message as MessageDomain,
@@ -9,6 +10,12 @@ import {
 } from "../../domain/interfaces/messageRepository.interface";
 import { MessageMapper } from "../mappers/messageMapper";
 import Message from "./Message";
+
+
+
+export interface PaginatedMessageDTO<T> extends Omit<PaginateResult<T>, 'docs'> {
+  docs: T[];
+}
 
 export class messageMongoRepository implements messageRepository {
   async createMessage({
@@ -52,10 +59,56 @@ export class messageMongoRepository implements messageRepository {
       throw error;
     }
   }
-  getMessages(projectId: string): Promise<MessageDTO[]> {
-    throw new Error("Method not implemented.");
+ async getMessages({projectId,userId , limit, page}: GetMessagesInput): Promise<PaginatedMessageDTO<MessageDTO>> {
+
+    try {
+
+      const query  = {
+        projectId, 
+        user:userId
+    }
+
+    const options =  {
+      limit, 
+      page, 
+      sort: {created: -1}, 
+      populate: [
+        {
+          path: "AIModel", select: ['modelName'],
+        }, 
+        {
+          path: "user", select: ['username']
+        }
+      ], 
+      lean: true
+    }
+
+    const messages = await Message.paginate(query, options)
+
+    if(Array.isArray(messages.docs)) {
+       
+      const messagesDomain = messages.docs?.map((message)=> MessageMapper.toDomain(message))
+      
+      return {
+        docs: messagesDomain, 
+        ...messages
+      }
+
+    }
+
+    
+
+      
+    } catch (error) {
+      throw error
+    }
+
   }
+
+
+
   generateIAMessage(projectId: string, prompt: string): Promise<MessageDTO> {
     throw new Error("Method not implemented.");
   }
 }
+ 
