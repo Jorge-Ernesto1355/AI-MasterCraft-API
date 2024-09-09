@@ -1,20 +1,21 @@
 
-import { PaginateResult } from "mongoose";
 import {
   MessageDTO,
   Message as MessageDomain,
 } from "../../domain/entities/Message";
 import {
+  GetMessagesInput,
   inputCreateMessage,
   messageRepository,
+  PaginationInfo,
 } from "../../domain/interfaces/messageRepository.interface";
 import { MessageMapper } from "../mappers/messageMapper";
-import Message from "./Message";
+import MessageSchema from "./Message";
 
 
 
-export interface PaginatedMessageDTO<T> extends Omit<PaginateResult<T>, 'docs'> {
-  docs: T[];
+export interface PaginatedMessageDTO extends PaginationInfo {
+  docs: MessageDTO[];
 }
 
 export class messageMongoRepository implements messageRepository {
@@ -42,7 +43,7 @@ export class messageMongoRepository implements messageRepository {
 
       const newMessage = await Message.create(messageData);
       const messageSaved = await newMessage.save();
-      console.log(messageSaved);
+   
 
       const objecMessageToDomain = {
         userId,
@@ -59,13 +60,14 @@ export class messageMongoRepository implements messageRepository {
       throw error;
     }
   }
- async getMessages({projectId,userId , limit, page}: GetMessagesInput): Promise<PaginatedMessageDTO<MessageDTO>> {
+ async getMessages({projectId,userId , limit, page}: GetMessagesInput): Promise<PaginatedMessageDTO> {
 
     try {
 
       const query  = {
         projectId, 
-        user:userId
+        user:userId, 
+        isDeleted: {$ne: true}
     }
 
     const options =  {
@@ -80,24 +82,31 @@ export class messageMongoRepository implements messageRepository {
           path: "user", select: ['username']
         }
       ], 
-      lean: true
+      lean: true, 
+      collation: {locale: "en"},
+      select: '_v'
     }
 
-    const messages = await Message.paginate(query, options)
+    const paginateMessages = await Message.paginate(query, options)
 
-    if(Array.isArray(messages.docs)) {
-       
-      const messagesDomain = messages.docs?.map((message)=> MessageMapper.toDomain(message))
-      
-      return {
-        docs: messagesDomain, 
-        ...messages
-      }
-
+    if(!paginateMessages || !Array.isArray(paginateMessages.docs)) {
+       throw new Error("Paginate is not available")
     }
 
-    
+    const messagesDomain = paginateMessages.docs.map(message => MessageMapper.toDomain(message));
 
+    return {
+      docs: messagesDomain,
+      totalDocs: paginateMessages.totalDocs,
+      limit: paginateMessages.limit,
+      totalPages: paginateMessages.totalPages,
+      page: paginateMessages.page,
+      pagingCounter: paginateMessages.pagingCounter,
+      hasPrevPage: paginateMessages.hasPrevPage,
+      hasNextPage: paginateMessages.hasNextPage,
+      prevPage: paginateMessages.prevPage,
+      nextPage: paginateMessages.nextPage
+    };
       
     } catch (error) {
       throw error

@@ -17,6 +17,7 @@ const ProjectIaSchema = new Schema({
   config: {},
 });
 
+
 const projectIASchema = mongoose.model<ProjectDocument>(
   "ProjectIa",
   ProjectIaSchema
