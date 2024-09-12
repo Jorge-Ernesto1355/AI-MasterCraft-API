@@ -10,9 +10,9 @@ export interface IContent {
 
 export interface Message {
   content: IContent[];
-  AImodel: any;
+  AImodelId: any;
   isIA: boolean;
-  user: any;
+  userId: any;
   metadata?: Record<string, any>;
   projectId: any;
 }
@@ -33,9 +33,9 @@ const MessageSchema = new Schema<IMessage>(
   {
     isIA: { type: Boolean, required: true },
     content: { type: [ContentSchema], required: true },
-    AImodel: { ref: "AIModel", type: Schema.Types.ObjectId },
+    AImodelId: { ref: "AIModel", type: Schema.Types.ObjectId },
     projectId: { ref: "AIModel", type: Schema.Types.ObjectId },
-    user: { ref: "User", type: Schema.Types.ObjectId },
+    userId: { ref: "User", type: Schema.Types.ObjectId },
     metadata: { type: Schema.Types.Mixed },
   },
   {
