@@ -1,5 +1,7 @@
+import { PaginatedMessage } from "../../infrastructure/persistence/messageMongoRepository";
 import { Message, MessageDTO } from "../entities/Message";
 import {
+  GetMessagesInput,
   inputCreateMessage,
   messageRepository as MessageRepository,
 } from "../interfaces/messageRepository.interface";
@@ -16,7 +18,12 @@ export class messageRepository implements MessageRepository {
   createMessage(config: inputCreateMessage): Promise<Message> {
     return this.repository.createMessage(config);
   }
-  getMessages(projectId: string): Promise<MessageDTO[]> {
-    return this.repository.getMessages(projectId);
+  getMessages({
+    projectId,
+    userId,
+    limit,
+    page,
+  }: GetMessagesInput): Promise<PaginatedMessage> {
+    return this.repository.getMessages({ projectId, userId, limit, page });
   }
 }
