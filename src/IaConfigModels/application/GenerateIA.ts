@@ -1,44 +1,38 @@
 import { Request, Response } from "express";
-import { iaServiceFactory } from "../infrastructure/dependecies";
+import { messageService as MessageService } from "../infrastructure/dependecies";
 import { StatusCodes } from "http-status-codes";
 
 export class GenerateIA {
   async run(req: Request, res: Response) {
     try {
-      const { projectId } = req.params;
-      if (!projectId) throw new Error("Arguments must be defined");
-
-      const { prompt, userId } = this.validateString(
+      const { prompt, projectId } = this.validate(
         req.query.prompt,
-        req.query.userId
+        req.params.projectId
       );
 
-      const projectIaService = await iaServiceFactory.create(userId);
-
-      if (projectIaService instanceof Error)
-        throw new Error(projectIaService.message);
-
-      const OutPutIA = await projectIaService.generateIAMessage(
+      const messageWithAI = await MessageService.generateIAMessage(
         projectId,
         prompt
       );
 
-      return res.status(StatusCodes.OK).json(OutPutIA);
+      if (messageWithAI instanceof Error) throw new Error(messageWithAI.name);
+
+      return res.status(StatusCodes.OK).json(messageWithAI);
     } catch (error) {
       return this.handleError(error, res);
     }
   }
 
-  private validateString(prompt: any, userId: any) {
+  private validate(prompt: any, projectId: string) {
     try {
-      if (!prompt || !userId) throw new Error("Arguments must be defined");
+      if (!prompt || !projectId) throw new Error("Arguments must be defined");
 
       if (typeof prompt !== "string")
         throw new Error("prompt must be a string");
-      if (typeof userId !== "string")
-        throw new Error("userId must be a string");
+      if (typeof projectId !== "string")
+        throw new Error("projectId must be a string");
 
-      return { prompt, userId };
+      return { prompt, projectId };
     } catch (error) {
       throw error;
     }
