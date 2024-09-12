@@ -1,4 +1,4 @@
-import { PaginatedMessageDTO } from "../../infrastructure/persistence/messageMongoRepository";
+import { PaginatedMessage } from "../../infrastructure/persistence/messageMongoRepository";
 import { Message, MessageDTO } from "../entities/Message";
 
 export interface inputCreateMessage {
@@ -29,10 +29,13 @@ export interface PaginationInfo {
   nextPage: number | null;
 }
 
-
-
 export interface messageRepository {
   createMessage({}: inputCreateMessage): Promise<Message>;
-  getMessages({projectId, userId, limit, page}: GetMessagesInput): Promise<PaginatedMessageDTO<MessageDTO>>;
+  getMessages({
+    projectId,
+    userId,
+    limit,
+    page,
+  }: GetMessagesInput): Promise<PaginatedMessage>;
   generateIAMessage(projectId: string, prompt: string): Promise<MessageDTO>;
 }
