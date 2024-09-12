@@ -2,10 +2,12 @@ import { MessageDTO } from "../../domain/entities/Message";
 import { IA_NOT_FOUND, IA_NOT_FOUND_MSG } from "../../domain/IAErrors";
 import { IARepository } from "../../domain/interfaces/IARepository.interface";
 import {
+  GetMessagesInput,
   inputCreateMessage,
   messageRepository,
 } from "../../domain/interfaces/messageRepository.interface";
 import ContentFormatter from "../../domain/utils/ContentFormatter";
+import { PaginatedMessage } from "../../infrastructure/persistence/messageMongoRepository";
 
 export class MessageService implements messageRepository {
   private messageRepository: messageRepository;
@@ -19,6 +21,25 @@ export class MessageService implements messageRepository {
     this.messageRepository = messageRepository;
     this.projectRepository = projectRepository;
     this.contentFormatter = new ContentFormatter();
+  }
+  async getMessages({
+    projectId,
+    userId,
+    limit,
+    page,
+  }: GetMessagesInput): Promise<PaginatedMessage> {
+    try {
+      const paginatedMessages = await this.messageRepository.getMessages({
+        projectId,
+        userId,
+        limit,
+        page,
+      });
+
+      return paginatedMessages;
+    } catch (error) {
+      throw new Error("something went wrong");
+    }
   }
   async generateIAMessage(
     projectId: string,
@@ -50,9 +71,6 @@ export class MessageService implements messageRepository {
     } catch (error) {
       throw new Error("something went wrong");
     }
-  }
-  getMessages(projectId: string): Promise<MessageDTO[]> {
-    throw new Error("Method not implemented.");
   }
 
   async createMessage({
