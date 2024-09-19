@@ -3,8 +3,9 @@ import { StatusCodes } from "http-status-codes";
 
 import { ValuesDefaultPagination } from "../../utilities/ValuedDefaultPagination";
 import { ApiError } from "../../utilities/apiError";
-import { isValidateUUID } from "../../utilities/validateUUID";
+import { isValidId } from "../../utilities/validateUUID";
 import { messageService } from "../infrastructure/dependecies";
+import { ErrorMessage } from "../../utilities/ErrorMessage";
 
 interface GetMessagesQuery {
   limit?: string;
@@ -18,30 +19,29 @@ export class GetMessages {
     res: Response
   ) {
     try {
+
       const { projectId } = req.params;
       const { limit, page, userId } = req.query;
+      
 
       if (!projectId || !userId) {
         throw new ApiError(
-          "MissingParameters",
-          "Project ID and User ID are required",
-          StatusCodes.BAD_REQUEST
+          ErrorMessage.ParametersMustBeDefined,
+          
         );
       }
 
-      if (!isValidateUUID(projectId)) {
+      if (!isValidId(projectId)) {
         throw new ApiError(
-          "InvalidProjectId",
-          "Invalid Project ID format",
-          StatusCodes.BAD_REQUEST
+         ErrorMessage.InvalidFormatId,
+          
         );
       }
 
-      if (!isValidateUUID(userId)) {
+      if (!isValidId(userId)) {
         throw new ApiError(
-          "InvalidUserId",
-          "Invalid User ID format",
-          StatusCodes.BAD_REQUEST
+          ErrorMessage.InvalidFormatId,
+      
         );
       }
 
@@ -54,9 +54,8 @@ export class GetMessages {
 
       if (isNaN(parsedLimit) || isNaN(parsedPage)) {
         throw new ApiError(
-          "InvalidPaginationParameters",
-          "Invalid pagination parameters",
-          StatusCodes.BAD_REQUEST
+          ErrorMessage.InvalidPaginationParameters,
+          
         );
       }
 
@@ -67,6 +66,7 @@ export class GetMessages {
         page: parsedPage,
       });
 
+      
       return res.status(StatusCodes.OK).json({
         status: "success",
         data: messages,
@@ -75,7 +75,10 @@ export class GetMessages {
           limit: parsedLimit,
         },
       });
+
     } catch (error) {
+
+    
       if (error instanceof ApiError) {
         return res.status(error.statusCode).json({
           status: "error",
