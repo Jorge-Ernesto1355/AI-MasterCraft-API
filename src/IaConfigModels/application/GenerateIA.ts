@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { messageService as MessageService } from "../infrastructure/dependecies";
 import { StatusCodes } from "http-status-codes";
+import { ApiError } from "../../utilities/apiError";
+import { ErrorMessage } from "../../utilities/ErrorMessage";
 
 export class GenerateIA {
   async run(req: Request, res: Response) {
@@ -25,12 +27,12 @@ export class GenerateIA {
 
   private validate(prompt: any, projectId: string) {
     try {
-      if (!prompt || !projectId) throw new Error("Arguments must be defined");
+      if (!prompt || !projectId) throw new ApiError(ErrorMessage.ParametersMustBeDefined);
 
-      if (typeof prompt !== "string")
-        throw new Error("prompt must be a string");
-      if (typeof projectId !== "string")
-        throw new Error("projectId must be a string");
+      if (typeof prompt !== "string"  || typeof projectId !== "string")
+       throw new ApiError(ErrorMessage.ParameterMustBeString)
+
+
 
       return { prompt, projectId };
     } catch (error) {
@@ -39,11 +41,18 @@ export class GenerateIA {
   }
 
   private handleError(error: unknown, res: Response): Response {
-    if (error instanceof Error) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
+    if (error instanceof ApiError) {
+      return res.status(error.statusCode).json({
+        status: "error",
+        message: error.message,
+        code: error.name,
+      });
     }
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Internal Server Error" });
+
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: "An unexpected error occurred",
+      code: "InternalServerError",
+    });
   }
 }
