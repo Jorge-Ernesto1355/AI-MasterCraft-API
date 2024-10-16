@@ -55,14 +55,14 @@ export class MessageService implements messageRepository {
         output: this.contentFormatter.format({ output: prompt }),
         userId: projectIA.userId,
         isIA: false,
-        AImodelId: null,
+        AImodelId: projectIA.ModelId,
         projectId,
       });
 
       const AIMessage = await this.createMessage({
         output: this.contentFormatter.format(outputIA),
         isIA: true,
-        userId: null,
+        userId: projectIA.userId,
         AImodelId: projectIA.ModelId,
         projectId,
       });
