@@ -19,35 +19,13 @@ export class GetMessages {
     res: Response
   ) {
     try {
-
       const { projectId } = req.params;
       const { limit, page, userId } = req.query;
-      
 
       if (!projectId || !userId) {
-        throw new ApiError(
-          ErrorMessage.ParametersMustBeDefined,
-          
-        );
+        throw new ApiError(ErrorMessage.ParametersMustBeDefined);
       }
 
-<<<<<<< HEAD
-=======
-      if (!isValidId(projectId)) {
-        throw new ApiError(
-         ErrorMessage.InvalidFormatId,
-          
-        );
-      }
-
-      if (!isValidId(userId)) {
-        throw new ApiError(
-          ErrorMessage.InvalidFormatId,
-      
-        );
-      }
-
->>>>>>> 9f10a3493d340aa7d0db8f976987c9c1359fea17
       const parsedLimit = limit
         ? parseInt(limit, 10)
         : ValuesDefaultPagination.limit;
@@ -56,10 +34,7 @@ export class GetMessages {
         : ValuesDefaultPagination.page;
 
       if (isNaN(parsedLimit) || isNaN(parsedPage)) {
-        throw new ApiError(
-          ErrorMessage.InvalidPaginationParameters,
-          
-        );
+        throw new ApiError(ErrorMessage.InvalidPaginationParameters);
       }
 
       const messages = await messageService.getMessages({
@@ -69,7 +44,6 @@ export class GetMessages {
         page: parsedPage,
       });
 
-      
       return res.status(StatusCodes.OK).json({
         status: "success",
         data: messages,
@@ -78,10 +52,7 @@ export class GetMessages {
           limit: parsedLimit,
         },
       });
-
     } catch (error) {
-
-    
       if (error instanceof ApiError) {
         return res.status(error.statusCode).json({
           status: "error",
