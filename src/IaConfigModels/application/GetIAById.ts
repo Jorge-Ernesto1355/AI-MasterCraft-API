@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { iaServiceFactory } from "../infrastructure/dependecies";
 import { AIService } from "../domain/interfaces/IAServices.interface";
+import { ApiError } from "../../utilities/apiError";
+import { ErrorMessage } from "../../utilities/ErrorMessage";
 
 export class GetIAById {
   async run(req: Request, res: Response): Promise<Response> {
@@ -22,21 +24,21 @@ export class GetIAById {
 
   private extractUserId(userId: unknown): string {
     if (typeof userId !== "string") {
-      throw new Error("userId must be a string");
+      throw new ApiError(ErrorMessage.ParameterMustBeString, StatusCodes.CONFLICT);
     }
     return userId;
   }
 
   private validateInputs(projectIAId: string, userId: string): void {
     if (!projectIAId || !userId) {
-      throw new Error("projectIAId and userId must be defined");
+      throw new ApiError(ErrorMessage.ParametersMustBeDefined, StatusCodes.BAD_REQUEST);
     }
   }
 
   private async createIAService(userId: string) {
     const IAService = await iaServiceFactory.create(userId);
     if (IAService instanceof Error) {
-      throw new Error(`Failed to create IAService: ${IAService.message}`);
+      throw new ApiError(ErrorMessage.ErrorServiceCreation, StatusCodes.FAILED_DEPENDENCY)
     }
     return IAService;
   }
@@ -44,20 +46,24 @@ export class GetIAById {
   private async getProjectIA(IAService: AIService, projectIAId: string) {
     const projectIa = await IAService.getById(projectIAId);
     if (projectIa instanceof Error) {
-      throw new Error("Project IA not found");
+      throw new ApiError(ErrorMessage.NotFound, StatusCodes.NO_CONTENT)
     }
     return projectIa;
   }
 
   private handleError(error: unknown, res: Response): Response {
-    if (error instanceof Error) {
-      if (error.message === "Project IA not found") {
-        return res.status(StatusCodes.NOT_FOUND).json({ error: error.message });
-      }
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
+    if (error instanceof ApiError) {
+      return res.status(error.statusCode).json({
+        status: "error",
+        message: error.message,
+        code: error.name,
+      });
     }
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Internal Server Error" });
+
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: "An unexpected error occurred",
+      code: "InternalServerError",
+    });
   }
 }

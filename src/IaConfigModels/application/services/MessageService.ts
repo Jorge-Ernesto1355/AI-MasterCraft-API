@@ -38,7 +38,8 @@ export class MessageService implements messageRepository {
 
       return paginatedMessages;
     } catch (error) {
-      throw new Error("something went wrong");
+      console.log(error)
+      throw new Error("Something went wrong with message");
     }
   }
   async generateIAMessage(

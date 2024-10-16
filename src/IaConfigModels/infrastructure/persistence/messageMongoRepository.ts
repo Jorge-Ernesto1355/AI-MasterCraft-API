@@ -92,7 +92,6 @@ export class messageMongoRepository implements messageRepository {
       };
 
       const paginateMessages = await MessageSchema.paginate(query, options);
-      console.log(paginateMessages);
 
       if (!paginateMessages || !Array.isArray(paginateMessages.docs)) {
         throw new Error("Paginate is not available");

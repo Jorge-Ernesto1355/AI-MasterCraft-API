@@ -6,7 +6,6 @@ const AImodelSchema = new Schema({
   modelName: { type: String },
   hash: { type: String },
   config: {},
-  projectId: { ref: "ProjectIa", type: Schema.Types.ObjectId },
 });
 
 const AImodel = model("AIModel", AImodelSchema);

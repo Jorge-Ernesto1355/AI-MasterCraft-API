@@ -2,11 +2,15 @@ import { Request, Response } from "express";
 import { Project } from "../domain/interfaces/Project.interface";
 import { iaServiceFactory } from "../infrastructure/dependecies";
 import { StatusCodes } from "http-status-codes";
+import { ApiError } from "../../utilities/apiError";
+import { ErrorMessage } from "../../utilities/ErrorMessage";
 
 export class CreateProjectAI {
   async run(req: Request, res: Response) {
     try {
       const { projectName, description, AImodelId, config } = req.body;
+
+     
       this.validateArguments({
         projectName,
         description,
@@ -33,22 +37,29 @@ export class CreateProjectAI {
   private async createIAService(userId: string) {
     const IAService = await iaServiceFactory.create(userId);
     if (IAService instanceof Error) {
-      throw new Error(`Failed to create IAService: ${IAService.message}`);
+      throw new ApiError(ErrorMessage.ErrorServiceCreation);
     }
     return IAService;
   }
 
   private validateArguments({ projectName, description, AImodelId }: Project) {
     if (!projectName || !description || !AImodelId)
-      throw new Error("Arguments must be defined");
+      throw new ApiError(ErrorMessage.ParametersMustBeDefined);
   }
 
   private handleError(error: unknown, res: Response): Response {
-    if (error instanceof Error) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
+    if (error instanceof ApiError) {
+      return res.status(error.statusCode).json({
+        status: "error",
+        message: error.message,
+        code: error.name,
+      });
     }
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Internal Server Error" });
+
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: "An unexpected error occurred",
+      code: "InternalServerError",
+    });
   }
 }
