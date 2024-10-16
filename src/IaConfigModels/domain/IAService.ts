@@ -50,9 +50,9 @@ export class IAService implements AIService {
     }
   }
 
-  async getAvailableIA(AIType: string): Promise<Array<Object>> {
+  async getAvailableIA(modelType: string | undefined): Promise<Array<Object>> {
     try {
-      const modelsAvaiabels = await this.IArepository.getAvailableIA(AIType);
+      const modelsAvaiabels = await this.IArepository.getAvailableIA(modelType);
       return modelsAvaiabels;
     } catch (error) {
       if (error instanceof Error) throw new Error(error.message);
@@ -60,7 +60,7 @@ export class IAService implements AIService {
       throw new Error("something went wrong with projects");
     }
   }
-  async getProjects(userId: string): Promise<Array<Project>> {
+  async getProjects(userId: string): Promise<Project[]> {
     try {
       const projects = await this.IArepository.getProjects(userId);
       const projectJson = projects.map((project) => project.toJSON());
