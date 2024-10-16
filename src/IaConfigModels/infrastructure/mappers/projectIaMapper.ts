@@ -7,7 +7,7 @@ export class ProjectIaMapper {
       description: projectIa.description,
       organization: projectIa.organization,
       modelName: projectIa.modelName,
-      IAType: projectIa.IAType,
+      modelType: projectIa.modelType,
       config: JSON.stringify(projectIa.configModel),
     };
   }
@@ -19,7 +19,7 @@ export class ProjectIaMapper {
       organization: entity.organization,
       modelName: entity.modelName,
       config: entity.config,
-      IAType: entity.IAType,
+      modelType: entity.modelType,
       userId: entity.userId,
       AImodelId: entity.AImodelId,
     });
