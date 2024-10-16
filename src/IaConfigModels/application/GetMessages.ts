@@ -29,22 +29,6 @@ export class GetMessages {
         );
       }
 
-      if (!isValidateUUID(projectId)) {
-        throw new ApiError(
-          "InvalidProjectId",
-          "Invalid Project ID format",
-          StatusCodes.BAD_REQUEST
-        );
-      }
-
-      if (!isValidateUUID(userId)) {
-        throw new ApiError(
-          "InvalidUserId",
-          "Invalid User ID format",
-          StatusCodes.BAD_REQUEST
-        );
-      }
-
       const parsedLimit = limit
         ? parseInt(limit, 10)
         : ValuesDefaultPagination.limit;
