@@ -6,7 +6,7 @@ interface ProjectIaConfig {
   organization: string;
   modelName: string;
   config: any;
-  IAType: string;
+  modelType: string;
   userId: string;
   AImodelId: string;
 }
@@ -39,7 +39,12 @@ class ProjectIa {
   }
 
   public toJSON() {
-    return { ...this.config };
+    return {
+      projectName: this.config.projectName,
+      description: this.config.description,
+      user: this.config.userId,
+      model: this.config.AImodelId,
+    };
   }
 
   // Getters
@@ -58,8 +63,8 @@ class ProjectIa {
   get configModel(): string {
     return this.config.config;
   }
-  get IAType(): string {
-    return this.config.IAType;
+  get modelType(): string {
+    return this.config.modelType;
   }
   get userId(): string {
     return this.config.userId;
