@@ -1,12 +1,36 @@
 import { StatusCodes } from "http-status-codes";
 
 export class ApiError extends Error {
-  public statusCode: number;
+  statusCode: number;
+  isOperational: boolean;
 
-  constructor(message: string, statusCode = StatusCodes.BAD_REQUEST) {
+  constructor(
+    name: string,
+    message: string,
+    statusCode: number,
+    isOperational = true
+  ) {
     super(message);
+    this.name = name;
     this.statusCode = statusCode;
-    this.name = this.constructor.name;
+    this.isOperational = isOperational;
     Error.captureStackTrace(this, this.constructor);
+  }
+
+  static badRequest(message: string): ApiError {
+    return new ApiError("BadRequest", message, StatusCodes.BAD_REQUEST);
+  }
+
+  static notFound(message: string): ApiError {
+    return new ApiError("NotFound", message, StatusCodes.NOT_FOUND);
+  }
+
+  static internal(message: string): ApiError {
+    return new ApiError(
+      "InternalServerError",
+      message,
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      false
+    );
   }
 }

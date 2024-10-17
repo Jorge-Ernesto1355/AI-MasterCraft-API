@@ -30,7 +30,7 @@ export interface PaginationInfo {
 }
 
 export interface messageRepository {
-  createMessage({}: inputCreateMessage): Promise<Message>;
+  createMessage({ }: inputCreateMessage): Promise<Message>;
   getMessages({
     projectId,
     userId,

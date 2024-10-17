@@ -1,3 +1,4 @@
+import path from "path";
 import ProjectIa from "../../domain/entities/ProjectAI";
 import { IA_NOT_FOUND, IA_NOT_FOUND_MSG } from "../../domain/IAErrors";
 import { IARepository } from "../../domain/interfaces/IARepository.interface";
@@ -7,12 +8,14 @@ import AIModel from "./modelsAI";
 import projectIASchema from "./ProjectIASchema";
 
 export class IAMongoRepository implements IARepository {
-  async getAvailableIA(AIType: string) {
+  async getAvailableIA(modelType: string | undefined) {
     try {
-      const normalizedAIType = AIType.trim().toLowerCase();
+      const normalizedModeltype = modelType?.trim().toLowerCase();
+
+      if (!normalizedModeltype) return await this.getAllModels();
 
       const AIModels = await AIModel.find({
-        IAType: { $regex: new RegExp(`^${normalizedAIType}$`, "i") },
+        modelType: { $regex: new RegExp(`^${normalizedModeltype}$`, "i") },
       });
 
       return AIModels;
@@ -20,6 +23,16 @@ export class IAMongoRepository implements IARepository {
       throw error;
     }
   }
+
+  async getAllModels(): Promise<Array<Object>> {
+    try {
+      const AIModels = await AIModel.find();
+      return AIModels;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getIAById(IdIA: string): Promise<ProjectIa | Error> {
     try {
       const projectIa = await projectIASchema.findById(IdIA);
@@ -69,9 +82,13 @@ export class IAMongoRepository implements IARepository {
     }
   }
 
-  async getProjects(userId: string): Promise<Array<ProjectIa>> {
+  async getProjects(userId: string): Promise<ProjectIa[]> {
     try {
-      const projects = await projectIASchema.find({ userId });
+      const projects = await projectIASchema
+        .find({ userId })
+        .populate("userId", ["name", "email", "username"])
+        .populate("AImodelId", ["modelName", "organization", "imageUrl"]);
+
       if (projects.length <= 0) return [];
       const projectsToDomain = projects.map((project) => {
         return ProjectIaMapper.toDomain(project);

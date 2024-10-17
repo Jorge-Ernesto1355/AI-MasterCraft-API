@@ -70,7 +70,7 @@ export class messageMongoRepository implements messageRepository {
     try {
       const query = {
         projectId,
-        isDeleted: { $ne: true },
+        userId,
       };
 
       const options = {
@@ -80,21 +80,18 @@ export class messageMongoRepository implements messageRepository {
         populate: [
           {
             path: "AImodelId",
-            select: ["modelName"],
+            select: ["modelName", "organization", "imageUrl"],
           },
           {
             path: "userId",
-            select: ["username"],
+            select: ["username", "email"],
           },
         ],
         lean: true,
         collation: { locale: "en" },
-        select: "_v",
       };
 
       const paginateMessages = await MessageSchema.paginate(query, options);
-
-      console.log(paginateMessages)
 
       if (!paginateMessages || !Array.isArray(paginateMessages.docs)) {
         throw new Error("Paginate is not available");

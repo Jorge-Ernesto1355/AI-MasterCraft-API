@@ -49,9 +49,9 @@ export class server {
   }
 
   private routers() {
-    this.app.use("/v1/users", userRouter);
-    this.app.use("/v1/projectIa", IARouter);
-    this.app.use("/v1/message", MessageRouter);
+    this.app.use("/api/v1/users", userRouter);
+    this.app.use("/api/v1/projectIa", IARouter);
+    this.app.use("/api/v1/message", MessageRouter);
   }
 
   private async runDB() {
