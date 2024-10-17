@@ -1,15 +1,17 @@
 import { Request, Response } from "express";
 import { iaServiceFactory } from "../infrastructure/dependecies";
 import { StatusCodes } from "http-status-codes";
+import { ApiError } from "../../utilities/apiError";
+import { ErrorMessage } from "../../utilities/ErrorMessage";
 
 export class GetAvailableIA {
   async run(req: Request, res: Response) {
     try {
       const { userId } = req.params;
       const { AIType } = req.query;
-      if (typeof AIType !== "string")
-        throw new Error("model type must be a string");
-      if (!userId) throw new Error("Arguments must be defined");
+
+      if(typeof AIType !== 'string') throw new ApiError(ErrorMessage.InvalidTypeParameters)
+      if (!userId) throw new ApiError(ErrorMessage.InvalidTypeParameters);
 
       const projectIaService = await iaServiceFactory.create(userId);
 
@@ -24,12 +26,20 @@ export class GetAvailableIA {
     }
   }
 
+
   private handleError(error: unknown, res: Response): Response {
-    if (error instanceof Error) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
+    if (error instanceof ApiError) {
+      return res.status(error.statusCode).json({
+        status: "error",
+        message: error.message,
+        code: error.name,
+      });
     }
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ error: "Internal Server Error" });
+
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      status: "error",
+      message: "An unexpected error occurred",
+      code: "InternalServerError",
+    });
   }
 }

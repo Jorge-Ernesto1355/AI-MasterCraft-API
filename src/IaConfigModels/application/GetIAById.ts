@@ -31,7 +31,7 @@ export class GetIAById {
 
   private validateInputs(projectIAId: string, userId: string): void {
     if (!projectIAId || !userId) {
-      throw new ApiError(ErrorMessage.ParametersMustBeDefined, StatusCodes.BAD_REQUEST);
+      throw new ApiError(ErrorMessage.ParametersMustBeDefined);
     }
   }
 
