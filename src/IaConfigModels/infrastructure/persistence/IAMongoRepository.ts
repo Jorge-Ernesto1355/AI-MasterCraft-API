@@ -1,4 +1,4 @@
-import path from "path";
+import { IAModel, IAModelDTO } from "../../domain/entities/IAModel";
 import ProjectIa from "../../domain/entities/ProjectAI";
 import { IA_NOT_FOUND, IA_NOT_FOUND_MSG } from "../../domain/IAErrors";
 import { IARepository } from "../../domain/interfaces/IARepository.interface";
@@ -24,7 +24,7 @@ export class IAMongoRepository implements IARepository {
     }
   }
 
-  async getAllModels(): Promise<Array<Object>> {
+  async getAllModels() {
     try {
       const AIModels = await AIModel.find();
       return AIModels;
@@ -54,27 +54,32 @@ export class IAMongoRepository implements IARepository {
 
   async save(project: Project): Promise<ProjectIa> {
     try {
-      const { projectName, description, AImodelId, userId, config } = project;
+      const { projectName, description, modelId, userId, config } = project;
+
       const newProject = await projectIASchema.create({
         projectName,
         description,
-        AImodelId,
+        modelId,
         userId,
         config,
       });
 
-      const AImodelObject = await AIModel.findById(AImodelId);
+      const populatedProject = await projectIASchema
+        .findById(newProject._id)
+        .populate({
+          path: "modelId",
+          select: ["modelName", "organization", "imageUrl"],
+        })
+        .populate({ path: "userId", select: "username" })
+        .exec();
 
-      if (AImodelObject instanceof Error) throw new Error("AI model Error");
+      if (!populatedProject) {
+        throw new Error("Failed to populate project");
+      }
 
-      await newProject.save();
-
-      const entityModel = {
-        ...newProject.toObject(),
-        ...AImodelObject?.toObject(),
-      };
-
-      const projectToDomain = ProjectIaMapper.toDomain(entityModel);
+      const projectToDomain = ProjectIaMapper.toDomain(
+        populatedProject.toObject()
+      );
 
       return projectToDomain;
     } catch (error) {
@@ -97,5 +102,15 @@ export class IAMongoRepository implements IARepository {
     } catch (error) {
       throw error;
     }
+  }
+
+  async searchByModelName(search: string) {
+    if (!search) return this.getAllModels();
+
+    const models = await AIModel.find({
+      modelName: { $regex: new RegExp(`^${search}$`, "i") },
+    });
+
+    return models;
   }
 }
