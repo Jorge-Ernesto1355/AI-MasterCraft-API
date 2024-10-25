@@ -1,6 +1,7 @@
 import { IAModel } from "./IAModel";
 
 interface ProjectIaConfig {
+  _id: string;
   projectName: string;
   description: string;
   organization: string;
@@ -8,17 +9,18 @@ interface ProjectIaConfig {
   config: any;
   modelType: string;
   userId: string;
-  AImodelId: string;
+  modelId: string;
 }
 
 class ProjectIa {
   private readonly model: IAModel;
   private readonly config: ProjectIaConfig;
+  _id: any;
 
   constructor(config: ProjectIaConfig) {
     this.config = config;
     this.model = new IAModel(
-      config.AImodelId,
+      config.modelId,
       config.organization,
       config.modelName,
       config.config
@@ -31,7 +33,7 @@ class ProjectIa {
 
   public getModelToJson() {
     return {
-      id: this.config.AImodelId,
+      _id: this.config.modelId,
       organization: this.config.organization,
       modelName: this.config.modelName,
       config: this.config.config,
@@ -40,10 +42,11 @@ class ProjectIa {
 
   public toJSON() {
     return {
+      _id: this.config._id,
       projectName: this.config.projectName,
       description: this.config.description,
       user: this.config.userId,
-      model: this.config.AImodelId,
+      model: this.config.modelId,
     };
   }
 
@@ -70,7 +73,7 @@ class ProjectIa {
     return this.config.userId;
   }
   get ModelId(): string {
-    return this.config.AImodelId;
+    return this.config.modelId;
   }
 }
 
