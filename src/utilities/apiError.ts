@@ -5,32 +5,26 @@ export class ApiError extends Error {
   isOperational: boolean;
 
   constructor(
-    name: string,
     message: string,
-    statusCode: number,
-    isOperational = true
+    statusCode: number = StatusCodes.INTERNAL_SERVER_ERROR,
+    isOperational: boolean = true
   ) {
     super(message);
-    this.name = name;
+
     this.statusCode = statusCode;
     this.isOperational = isOperational;
     Error.captureStackTrace(this, this.constructor);
   }
 
   static badRequest(message: string): ApiError {
-    return new ApiError("BadRequest", message, StatusCodes.BAD_REQUEST);
+    return new ApiError(message, StatusCodes.BAD_REQUEST);
   }
 
   static notFound(message: string): ApiError {
-    return new ApiError("NotFound", message, StatusCodes.NOT_FOUND);
+    return new ApiError(message, StatusCodes.NOT_FOUND);
   }
 
   static internal(message: string): ApiError {
-    return new ApiError(
-      "InternalServerError",
-      message,
-      StatusCodes.INTERNAL_SERVER_ERROR,
-      false
-    );
+    return new ApiError(message, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 }
