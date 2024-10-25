@@ -8,14 +8,13 @@ import { ErrorMessage } from "../../utilities/ErrorMessage";
 export class CreateProjectAI {
   async run(req: Request, res: Response) {
     try {
-      const { projectName, description, AImodelId, config } = req.body;
+      const { projectName, description, modelId, config } = req.body;
 
-     
       this.validateArguments({
         projectName,
         description,
         config,
-        AImodelId,
+        modelId,
       });
 
       const IAService = await this.createIAService(req.params.userId);
@@ -24,7 +23,7 @@ export class CreateProjectAI {
         projectName,
         description,
         config,
-        AImodelId,
+        modelId,
       });
       if (newProjectAI instanceof Error) throw new Error(newProjectAI.message);
 
@@ -37,14 +36,20 @@ export class CreateProjectAI {
   private async createIAService(userId: string) {
     const IAService = await iaServiceFactory.create(userId);
     if (IAService instanceof Error) {
-      throw new ApiError(ErrorMessage.ErrorServiceCreation);
+      throw new ApiError(
+        ErrorMessage.ErrorServiceCreation,
+        StatusCodes.CONFLICT
+      );
     }
     return IAService;
   }
 
-  private validateArguments({ projectName, description, AImodelId }: Project) {
-    if (!projectName || !description || !AImodelId)
-      throw new ApiError(ErrorMessage.ParametersMustBeDefined);
+  private validateArguments({ projectName, description, modelId }: Project) {
+    if (!projectName || !description || !modelId)
+      throw new ApiError(
+        ErrorMessage.ParametersMustBeDefined,
+        StatusCodes.CONFLICT
+      );
   }
 
   private handleError(error: unknown, res: Response): Response {
