@@ -1,4 +1,5 @@
 export interface Project {
+  _id: string;
   projectName: string;
   description: string;
   organization?: string;
@@ -6,5 +7,5 @@ export interface Project {
   config?: any;
   IAType?: string;
   userId?: string;
-  AImodelId?: string;
+  modelId?: string;
 }
