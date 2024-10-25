@@ -3,6 +3,7 @@ import ProjectIa from "../../domain/entities/ProjectAI";
 export class ProjectIaMapper {
   static toPersistence(projectIa: ProjectIa): any {
     return {
+      _id: projectIa._id,
       projectName: projectIa.projectName,
       description: projectIa.description,
       organization: projectIa.organization,
@@ -14,6 +15,7 @@ export class ProjectIaMapper {
 
   static toDomain(entity: any): ProjectIa {
     return new ProjectIa({
+      _id: entity._id,
       projectName: entity.projectName,
       description: entity.description,
       organization: entity.organization,
@@ -21,7 +23,7 @@ export class ProjectIaMapper {
       config: entity.config,
       modelType: entity.modelType,
       userId: entity.userId,
-      AImodelId: entity.AImodelId,
+      modelId: entity.modelId,
     });
   }
 }
