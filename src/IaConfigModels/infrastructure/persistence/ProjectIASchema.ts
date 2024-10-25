@@ -6,7 +6,7 @@ interface ProjectDocument extends Project, Document {}
 const ProjectIaSchema = new Schema({
   projectName: { type: String, maxLength: 30 },
   description: { type: String, maxLength: 100 },
-  AImodelId: { ref: "AIModel", type: Schema.Types.ObjectId },
+  modelId: { ref: "AIModel", type: Schema.Types.ObjectId },
   userId: { ref: "User", type: Schema.Types.ObjectId },
   messages: [
     {
@@ -16,7 +16,6 @@ const ProjectIaSchema = new Schema({
   ],
   config: {},
 });
-
 
 const projectIASchema = mongoose.model<ProjectDocument>(
   "ProjectIa",
