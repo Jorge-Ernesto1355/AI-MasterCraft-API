@@ -4,6 +4,7 @@ import {
   getAvailableIA,
   getById,
   getProjects,
+  searchModelByName,
 } from "../../application";
 
 const IARouter = Router();
@@ -18,5 +19,9 @@ IARouter.get(
 );
 
 IARouter.post("/:userId", createProjectAI.run.bind(createProjectAI));
+
+IARouter.get('/search/:userId', searchModelByName
+  .run.bind(searchModelByName))
+
 
 export default IARouter;
