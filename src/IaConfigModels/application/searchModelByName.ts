@@ -17,7 +17,7 @@ export class SearchModelByName {
                 const models = await service.searchModelByName(validatedQuery)
                 return response.status(StatusCodes.OK).json(models)
             } catch (error) {
-              console.log(error)
+              
                 this.handleError(error, response)
             }
        
@@ -25,7 +25,7 @@ export class SearchModelByName {
     }
 
     private validateInput(userId: string, query: any) {
-    if(!userId || !query) throw new Error(ErrorMessage.ParameterMustBeString)
+    if(!userId || !query) throw new Error(ErrorMessage.ParametersMustBeDefined)
     
     if(typeof query !== "string") throw new Error(ErrorMessage.ParameterMustBeString)
 
