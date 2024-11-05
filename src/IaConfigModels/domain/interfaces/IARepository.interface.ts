@@ -1,9 +1,11 @@
+import { IAModel } from "../entities/IAModel";
 import ProjectIa from "../entities/ProjectAI";
 import { Project } from "./Project.interface";
 
 export interface IARepository {
   getIAById(IdIA: string): Promise<ProjectIa | Error>;
-  save(project: Project): Promise<ProjectIa>;
+  save(project: Omit<Project, "_id">): Promise<ProjectIa>;
   getProjects(userId: string): Promise<ProjectIa[]>;
   getAvailableIA(AIType: string | undefined): any;
+  searchByModelName(search:string): Promise<IAModel[]>
 }
