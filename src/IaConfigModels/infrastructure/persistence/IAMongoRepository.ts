@@ -3,12 +3,13 @@ import ProjectIa from "../../domain/entities/ProjectAI";
 import { IA_NOT_FOUND, IA_NOT_FOUND_MSG } from "../../domain/IAErrors";
 import { IARepository } from "../../domain/interfaces/IARepository.interface";
 import { Project } from "../../domain/interfaces/Project.interface";
+import { AImodelMapper } from "../mappers/AImodelMapper";
 import { ProjectIaMapper } from "../mappers/projectIaMapper";
 import AIModel from "./modelsAI";
 import projectIASchema from "./ProjectIASchema";
 
 export class IAMongoRepository implements IARepository {
-  async getAvailableIA(modelType: string | undefined) {
+  async getAvailableIA(modelType: string | undefined): Promise<IAModel[]> {
     try {
       const normalizedModeltype = modelType?.trim().toLowerCase();
 
@@ -18,16 +19,20 @@ export class IAMongoRepository implements IARepository {
         modelType: { $regex: new RegExp(`^${normalizedModeltype}$`, "i") },
       });
 
-      return AIModels;
+      const models = AIModels.map((model)=> AImodelMapper.toDomain(model))
+      return models as IAModel[]
     } catch (error) {
       throw error;
     }
   }
 
-  async getAllModels() {
+  async getAllModels(): Promise<IAModel[]> {
     try {
       const AIModels = await AIModel.find();
-      return AIModels;
+    
+      const models = AIModels.map((model)=> AImodelMapper.toDomain(model))
+      
+      return models
     } catch (error) {
       throw error;
     }
@@ -39,7 +44,7 @@ export class IAMongoRepository implements IARepository {
 
       if (!projectIa) return new IA_NOT_FOUND(IA_NOT_FOUND_MSG);
 
-      const AImodel = await AIModel.findById(projectIa.AImodelId);
+      const AImodel = await AIModel.findById(projectIa.modelId);
 
       const projectToDomain = ProjectIaMapper.toDomain({
         ...projectIa.toObject(),
@@ -104,13 +109,15 @@ export class IAMongoRepository implements IARepository {
     }
   }
 
-  async searchByModelName(search: string) {
-    if (!search) return this.getAllModels();
-
+  async searchByModelName(search: string): Promise<IAModel[]> {
+    if (!search) return await this.getAllModels();
+  
     const models = await AIModel.find({
-      modelName: { $regex: new RegExp(`^${search}$`, "i") },
+      modelName: { $regex: new RegExp(search, "i") }, // Partial match
     });
-
-    return models;
+  
+    const modelsDomain = models.map((model) => AImodelMapper.toDomain(model));
+  
+    return modelsDomain;
   }
 }
