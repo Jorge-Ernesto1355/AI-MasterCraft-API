@@ -1,15 +1,17 @@
 import { ReplicateAdapter } from "../../infrastructure/ports/ReplicateAdapter";
 
 export interface IAModelDTO {
-  id: string;
+  id?: string;
   organization: string;
   config: object;
   modelName: string;
+  modelType: string
 }
 
 export class IAModel {
   private readonly organization: string;
   private readonly modelName: string;
+  private readonly modelType: string;
   private readonly config: any;
   private readonly id: string;
 
@@ -17,12 +19,14 @@ export class IAModel {
     id: string,
     organization: string,
     modelName: string,
-    config: any
+    modelType: string,
+    config: object
   ) {
+    this.id = id;
     this.organization = organization;
     this.modelName = modelName;
+    this.modelType = modelType;
     this.config = config;
-    this.id = id;
   }
 
   async run(prompt: string) {
@@ -37,10 +41,11 @@ export class IAModel {
 
   public toJSON() {
     return {
+      id: this.id,
+      modelType: this.modelType,
       organization: this.organization,
       modelName: this.modelName,
       config: this.config,
-      id: this.id,
     };
   }
 }
