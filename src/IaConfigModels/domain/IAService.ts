@@ -30,29 +30,12 @@ export class IAService implements AIService {
     this.user = user;
     this.contentFormatter = new ContentFormatter();
   }
-  async createMessage({
-    user,
-    AImodel,
-    output,
-    isIA,
-    projectId,
-  }: createMessageProps) {
-    try {
-      return await this.IArepository.createMessage({
-        user,
-        AImodel,
-        output,
-        isIA,
-        projectId,
-      });
-    } catch (error) {
-      throw error;
-    }
-  }
+ 
 
-  async getAvailableIA(modelType: string | undefined): Promise<Array<Object>> {
+  async getAvailableIA(modelType: string | undefined): Promise<IAModelDTO[]> {
     try {
       const modelsAvaiabels = await this.IArepository.getAvailableIA(modelType);
+     
       return modelsAvaiabels;
     } catch (error) {
       if (error instanceof Error) throw new Error(error.message);
@@ -82,7 +65,7 @@ export class IAService implements AIService {
     }
   }
 
-  async save(project: Project): Promise<Project> {
+  async save(project: Omit<Project, "_id">): Promise<Project> {
     try {
       const newProject = await this.IArepository.save({
         ...project,
@@ -94,34 +77,7 @@ export class IAService implements AIService {
       throw new Error("Something went wrong");
     }
   }
-  async generateIAMessage(
-    projectId: string,
-    prompt: string
-  ): Promise<MessageDTO> {
-    try {
-      const projectIA = await this.getValidProjectIA(projectId);
-      const outputIA = await projectIA.run(prompt);
 
-      // creation of user message
-      await this.createMessage({
-        output: this.contentFormatter.format({ output: prompt }),
-        user: this.user.toJSON(),
-        isIA: false,
-        AImodel: null,
-        projectId,
-      });
-
-      return this.createMessage({
-        output: this.contentFormatter.format(outputIA),
-        isIA: true,
-        user: null,
-        AImodel: projectIA.getModelToJson(),
-        projectId,
-      });
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
 
   private async getValidProjectIA(projectId: string): Promise<ProjectIa> {
     const projectIA = await this.IArepository.getIAById(projectId);
@@ -134,12 +90,22 @@ export class IAService implements AIService {
     return projectIA;
   }
 
-  private handleError(error: unknown): never {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error("Something went wrong");
+ async  searchModelByName(search: string): Promise<IAModelDTO[]> {
+
+     try {
+      const models = await this.IArepository.searchByModelName(search)
+      const modelsDTO = models.map((model)=> model.toJSON())
+      return modelsDTO
+     } catch (error) {
+      if (error instanceof Error) throw new Error(error.message);
+      throw new Error("Something went wrong");
+     }
+
+
+      
   }
+
+
 }
 
 export class IaServiceFactory {
