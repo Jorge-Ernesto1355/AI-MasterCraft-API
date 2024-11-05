@@ -44,7 +44,7 @@ export class CreateProjectAI {
     return IAService;
   }
 
-  private validateArguments({ projectName, description, modelId }: Project) {
+  private validateArguments({ projectName, description, modelId }: Omit<Project, "_id">) {
     if (!projectName || !description || !modelId)
       throw new ApiError(
         ErrorMessage.ParametersMustBeDefined,
