@@ -22,4 +22,8 @@ export class IARepository implements InterfaceIARepository {
   save(project: Project): Promise<ProjectIa> {
     return this.repository.save(project);
   }
+
+  searchByModelName(search: string) {
+      return this.repository.searchByModelName(search)
+  }
 }
