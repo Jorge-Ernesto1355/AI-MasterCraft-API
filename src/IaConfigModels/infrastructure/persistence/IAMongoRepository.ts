@@ -29,9 +29,11 @@ export class IAMongoRepository implements IARepository {
   async getAllModels(): Promise<IAModel[]> {
     try {
       const AIModels = await AIModel.find();
+  console.log(AIModels, "getAllModles")
+
+      const models  = AImodelMapper.toDomainList(AIModels)
     
-      const models = AIModels.map((model)=> AImodelMapper.toDomain(model))
-      
+    
       return models
     } catch (error) {
       throw error;
