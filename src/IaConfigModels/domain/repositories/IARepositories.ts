@@ -1,3 +1,4 @@
+import { IAModel } from "../entities/IAModel";
 import ProjectIa from "../entities/ProjectAI";
 import { IARepository as InterfaceIARepository } from "../interfaces/IARepository.interface";
 import { Project } from "../interfaces/Project.interface";
@@ -8,7 +9,7 @@ export class IARepository implements InterfaceIARepository {
   constructor(repository: InterfaceIARepository) {
     this.repository = repository;
   }
-  getAvailableIA(AIType: string) {
+  getAvailableIA(AIType: string): Promise<Array<IAModel>> {
     return this.repository.getAvailableIA(AIType);
   }
   getProjects(userId: string): Promise<Array<ProjectIa>> {
