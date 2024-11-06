@@ -35,8 +35,9 @@ export class IAService implements AIService {
   async getAvailableIA(modelType: string | undefined): Promise<IAModelDTO[]> {
     try {
       const modelsAvaiabels = await this.IArepository.getAvailableIA(modelType);
-     
-      return modelsAvaiabels;
+      console.log(modelsAvaiabels)
+     const modelsDTO = modelsAvaiabels.map((model)=> model.toJSON())
+     return modelsDTO
     } catch (error) {
       if (error instanceof Error) throw new Error(error.message);
 
