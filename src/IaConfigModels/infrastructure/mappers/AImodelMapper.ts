@@ -8,6 +8,26 @@ export class AImodelMapper {
 
 
     static toDomain(entity: any): IAModel {
-        return new IAModel(entity.id, entity.organization, entity.modelName,entity.modelType, entity.config)
+        
+        
+        const rawEntity = Array.isArray(entity) ? entity[0] : entity;
+        
+        const id = rawEntity._id ? rawEntity._id.toString() : rawEntity.id;
+
+        console.log(rawEntity.imageUrl, "rawEntity")
+        return new IAModel({
+            id,
+            modelName: rawEntity.modelName,
+            modelType: rawEntity.modelType,
+            organization: rawEntity.organization,
+            config: rawEntity.configuration || rawEntity.config,
+            imageUrl: rawEntity.imageUrl,
+                
+        });
+    }
+
+    
+    static toDomainList(entities: any[]): IAModel[] {
+        return entities.map(entity => this.toDomain(entity));
     }
 }
