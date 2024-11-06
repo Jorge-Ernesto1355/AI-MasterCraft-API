@@ -6,6 +6,6 @@ export interface IARepository {
   getIAById(IdIA: string): Promise<ProjectIa | Error>;
   save(project: Omit<Project, "_id">): Promise<ProjectIa>;
   getProjects(userId: string): Promise<ProjectIa[]>;
-  getAvailableIA(AIType: string | undefined): any;
+  getAvailableIA(AIType: string | undefined): Promise<IAModel[]>;
   searchByModelName(search:string): Promise<IAModel[]>
 }
