@@ -3,49 +3,78 @@ import { ReplicateAdapter } from "../../infrastructure/ports/ReplicateAdapter";
 export interface IAModelDTO {
   id?: string;
   organization: string;
-  config: object;
+  config: Record<string, any>;
   modelName: string;
-  modelType: string
+  modelType: string;
+  imageUrl: string;
+
 }
 
 export class IAModel {
   private readonly organization: string;
   private readonly modelName: string;
   private readonly modelType: string;
-  private readonly config: any;
+  private readonly config: Record<string, any>;
   private readonly id: string;
+  private readonly imageUrl: string;
+  
 
-  constructor(
-    id: string,
-    organization: string,
-    modelName: string,
-    modelType: string,
-    config: object
-  ) {
-    this.id = id;
-    this.organization = organization;
-    this.modelName = modelName;
-    this.modelType = modelType;
-    this.config = config;
+  constructor(props: IAModelDTO) {
+      this.id = props.id ?? '';
+      this.organization = props.organization;
+      this.modelName = props.modelName;
+      this.modelType = props.modelType;
+      this.config = props.config;
+      this.imageUrl = props.imageUrl;
+      
   }
 
   async run(prompt: string) {
-    const replicateAdapter = new ReplicateAdapter(
-      this.organization,
-      this.modelName
-    );
-    return {
-      output: "hola este es mi primer mensaje si es que funciona",
-    };
+      const replicateAdapter = new ReplicateAdapter(
+          this.organization,
+          this.modelName
+      );
+      return {
+          output: "hola este es mi primer mensaje si es que funciona",
+      };
   }
 
-  public toJSON() {
-    return {
-      id: this.id,
-      modelType: this.modelType,
-      organization: this.organization,
-      modelName: this.modelName,
-      config: this.config,
-    };
+  public toJSON(): IAModelDTO {
+      return {
+          id: this.id,
+          modelType: this.modelType,
+          organization: this.organization,
+          modelName: this.modelName,
+          config: this.config,
+          imageUrl: this.imageUrl,
+          
+      };
   }
+
+  // Getters
+  getId(): string {
+      return this.id;
+  }
+
+  getOrganization(): string {
+      return this.organization;
+  }
+
+  getModelName(): string {
+      return this.modelName;
+  }
+
+  getModelType(): string {
+      return this.modelType;
+  }
+
+  getConfig(): Record<string, any> | undefined {
+      return this.config;
+  }
+
+  getImageUrl(): string | undefined {
+      return this.imageUrl;
+  }
+
+ 
 }
