@@ -1,6 +1,14 @@
-import jwt from "jsonwebtoken";
+import jwt, {
+  JsonWebTokenError,
+  NotBeforeError,
+  TokenExpiredError,
+} from "jsonwebtoken";
 import dotenv from "dotenv";
-import { tokenService } from "./tokenService.inteface";
+import {
+  tokenPayload,
+  tokenService,
+  TokenVerificationResult,
+} from "./tokenService.inteface";
 
 dotenv.config();
 
@@ -30,19 +38,64 @@ export class JWTService implements tokenService {
     this.REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN;
   }
 
-  verifyToken(token: string): Promise<string | Error> {
-    throw new Error("Method not implemented.");
+  verifyToken(token: string): TokenVerificationResult {
+    try {
+      const decodedToken = jwt.verify(
+        token,
+        this.REFRESH_TOKEN_SECRET
+      ) as tokenPayload;
+
+      return {
+        isValid: true,
+        userId: decodedToken.userId,
+      };
+    } catch (error) {
+      console.log(error);
+      return this.handleTokenError(error);
+    }
   }
 
   generateAccessToken(userId: string): string {
-    return jwt.sign({ userId }, this.ACCESS_TOKEN_SECRET, {
+    const token = jwt.sign({ userId }, this.ACCESS_TOKEN_SECRET, {
       expiresIn: this.ACCESS_TOKEN_EXPIRES_IN,
     });
+
+    return token;
   }
 
   generateRefreshToken(userId: string): string {
-    return jwt.sign({ userId }, this.REFRESH_TOKEN_SECRET, {
+    const token = jwt.sign({ userId }, this.REFRESH_TOKEN_SECRET, {
       expiresIn: this.REFRESH_TOKEN_EXPIRES_IN,
     });
+
+    return token;
+  }
+
+  private handleTokenError(error: unknown): TokenVerificationResult {
+    if (error instanceof TokenExpiredError) {
+      return {
+        isValid: false,
+        error: "Token has expired",
+      };
+    }
+
+    if (error instanceof JsonWebTokenError) {
+      return {
+        isValid: false,
+        error: "Invalid token",
+      };
+    }
+
+    if (error instanceof NotBeforeError) {
+      return {
+        isValid: false,
+        error: "Token not yet active",
+      };
+    }
+
+    return {
+      isValid: false,
+      error: "Unexpected token verification error",
+    };
   }
 }
