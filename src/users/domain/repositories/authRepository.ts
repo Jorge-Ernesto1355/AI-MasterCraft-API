@@ -1,4 +1,7 @@
-import { tokenService } from "../../infrastructure/auth/tokenService.inteface";
+import {
+  tokenService,
+  TokenVerificationResult,
+} from "../../infrastructure/auth/tokenService.inteface";
 import { User } from "../entities/User";
 import { NotFoundUser, NotFoundUserMsg } from "../ErrorsUser";
 import { authRepository as IAuthRepository } from "../interfaces/authRepository.interface";
@@ -33,7 +36,7 @@ export class authRepository implements IAuthRepository {
       if (user instanceof NotFoundUser) throw new Error(NotFoundUserMsg);
 
       if (user instanceof User)
-        return this.tokenService.generateAccessToken(userId);
+        return this.tokenService.generateRefreshToken(userId);
 
       throw new Error("Unexpected Error");
     } catch (error) {
@@ -41,7 +44,8 @@ export class authRepository implements IAuthRepository {
       throw new Error("Something went wrong with generate accesss token");
     }
   }
-  verifyToken(token: string): Promise<string | Error> {
-    throw new Error("Method not implemented.");
+  verifyToken(token: string): TokenVerificationResult {
+    const decodedToken = this.tokenService.verifyToken(token);
+    return decodedToken;
   }
 }
