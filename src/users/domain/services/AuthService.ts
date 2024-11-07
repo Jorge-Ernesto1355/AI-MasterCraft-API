@@ -66,6 +66,29 @@ export class AuthService {
     }
   }
 
+  async getRefreshToken({
+    userId,
+    refreshToken,
+  }: {
+    userId: string;
+    refreshToken: string;
+  }): Promise<{ accessToken: string; refreshToken: string } | Error> {
+    try {
+      const isVaildRefreshToken = this.authRepository.verifyToken(refreshToken);
+      if (!isVaildRefreshToken.isValid)
+        throw new Error("Invalid Refresh Token");
+
+      const tokens = await this.authenticate(userId);
+      if (tokens instanceof Error) throw new Error("Error generating tokens");
+
+      return tokens;
+    } catch (error) {
+      return this.handleError(
+        error,
+        "Unexpected Error occuring on getRefreshToken"
+      );
+    }
+  }
   private async authenticate(
     userId: string
   ): Promise<{ accessToken: string; refreshToken: string }> {
