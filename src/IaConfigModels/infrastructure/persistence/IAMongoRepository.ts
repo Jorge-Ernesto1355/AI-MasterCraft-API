@@ -19,8 +19,8 @@ export class IAMongoRepository implements IARepository {
         modelType: { $regex: new RegExp(`^${normalizedModeltype}$`, "i") },
       });
 
-      const models = AIModels.map((model)=> AImodelMapper.toDomain(model))
-      return models as IAModel[]
+      const models = AIModels.map((model) => AImodelMapper.toDomain(model));
+      return models as IAModel[];
     } catch (error) {
       throw error;
     }
@@ -29,12 +29,10 @@ export class IAMongoRepository implements IARepository {
   async getAllModels(): Promise<IAModel[]> {
     try {
       const AIModels = await AIModel.find();
-  console.log(AIModels, "getAllModles")
 
-      const models  = AImodelMapper.toDomainList(AIModels)
-    
-    
-      return models
+      const models = AImodelMapper.toDomainList(AIModels);
+
+      return models;
     } catch (error) {
       throw error;
     }
@@ -113,13 +111,13 @@ export class IAMongoRepository implements IARepository {
 
   async searchByModelName(search: string): Promise<IAModel[]> {
     if (!search) return await this.getAllModels();
-  
+
     const models = await AIModel.find({
       modelName: { $regex: new RegExp(search, "i") }, // Partial match
     });
-  
+
     const modelsDomain = models.map((model) => AImodelMapper.toDomain(model));
-  
+
     return modelsDomain;
   }
 }
