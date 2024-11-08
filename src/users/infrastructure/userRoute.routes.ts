@@ -9,6 +9,6 @@ userRouter.post("/register", register.run.bind(register));
 
 userRouter.post("/login", login.run.bind(login));
 
-userRouter.get("/refreshToken/:userId", refreshToken.run.bind(refreshToken));
+userRouter.post("/refreshToken/:userId", refreshToken.run.bind(refreshToken));
 
 export { userRouter };
