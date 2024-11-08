@@ -37,5 +37,5 @@ export interface messageRepository {
     limit,
     page,
   }: GetMessagesInput): Promise<PaginatedMessage>;
-  generateIAMessage(projectId: string, prompt: string): Promise<MessageDTO>;
+ 
 }
