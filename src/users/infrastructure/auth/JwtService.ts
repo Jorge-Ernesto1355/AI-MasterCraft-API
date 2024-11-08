@@ -50,7 +50,7 @@ export class JWTService implements tokenService {
         userId: decodedToken.userId,
       };
     } catch (error) {
-      console.log(error);
+     
       return this.handleTokenError(error);
     }
   }
