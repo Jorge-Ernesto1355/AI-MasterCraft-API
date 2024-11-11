@@ -38,7 +38,7 @@ export class MessageService implements messageRepository {
 
       return paginatedMessages;
     } catch (error) {
-      console.log(error)
+      console.log(error);
       throw new Error("Something went wrong with message");
     }
   }
@@ -70,7 +70,8 @@ export class MessageService implements messageRepository {
 
       return AIMessage.toJSON();
     } catch (error) {
-      throw new Error("something went wrong");
+      if (error instanceof Error) throw new Error(error.message);
+      throw new Error("Something went wrong with message");
     }
   }
 
