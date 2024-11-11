@@ -113,7 +113,7 @@ export class IAMongoRepository implements IARepository {
     if (!search) return await this.getAllModels();
 
     const models = await AIModel.find({
-      modelName: { $regex: new RegExp(search, "i") }, // Partial match
+      modelName: { $regex: new RegExp(search, "i") },
     });
 
     const modelsDomain = models.map((model) => AImodelMapper.toDomain(model));
