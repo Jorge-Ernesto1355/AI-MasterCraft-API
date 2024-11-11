@@ -7,11 +7,9 @@ import { ErrorMessage } from "../../utilities/ErrorMessage";
 export class GenerateIA {
   async run(req: Request, res: Response) {
     try {
-
-      
       const { prompt, projectId } = this.validate(
         req.query.prompt,
-        req.params.projectId, 
+        req.params.projectId,
         req.query.userId
       );
 
@@ -24,18 +22,22 @@ export class GenerateIA {
 
       return res.status(StatusCodes.OK).json(messageWithAI);
     } catch (error) {
+      console.log(error);
       return this.handleError(error, res);
     }
   }
 
   private validate(prompt: any, projectId: string, userId: any) {
     try {
-      if (!prompt || !projectId || !userId) throw new ApiError(ErrorMessage.ParametersMustBeDefined);
+      if (!prompt || !projectId || !userId)
+        throw new ApiError(ErrorMessage.ParametersMustBeDefined);
 
-      if (typeof prompt !== "string"  || typeof projectId !== "string" || typeof userId !== "string")
-       throw new ApiError(ErrorMessage.ParameterMustBeString)
-
-
+      if (
+        typeof prompt !== "string" ||
+        typeof projectId !== "string" ||
+        typeof userId !== "string"
+      )
+        throw new ApiError(ErrorMessage.ParameterMustBeString);
 
       return { prompt, projectId };
     } catch (error) {
