@@ -7,12 +7,12 @@ import { ApiError } from "../../utilities/apiError";
 export class SearchModelByName {
   async run(req: Request, response: Response) {
     try {
-      const { userId } = req.params;
+      
       const { query } = req.query;
 
-      const { userId: validatedUserId, query: validatedQuery } =
-        this.validateInput(userId, query);
-      const service = await this.createIAService(validatedUserId);
+      const validatedQuery =
+        this.validateInput( query);
+      const service = await this.createIAService();
       const models = await service.searchModelByName(validatedQuery);
       return response.status(StatusCodes.OK).json(models);
     } catch (error) {
@@ -20,17 +20,17 @@ export class SearchModelByName {
     }
   }
 
-  private validateInput(userId: string, query: any) {
-    if (!userId || !query)
+  private validateInput(query: any) {
+    if ( !query)
       throw new Error(ErrorMessage.ParametersMustBeDefined);
 
     if (typeof query !== "string")
       throw new Error(ErrorMessage.ParameterMustBeString);
 
-    return { userId, query };
+    return query
   }
 
-  private async createIAService(userId: string) {
+  private async createIAService(userId?: string) {
     const IAService = await iaServiceFactory.create(userId);
     if (IAService instanceof Error) {
       throw new ApiError(
