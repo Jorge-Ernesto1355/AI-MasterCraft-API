@@ -3,7 +3,7 @@ import { StatusCodes } from "http-status-codes";
 
 import { ValuesDefaultPagination } from "../../utilities/ValuedDefaultPagination";
 import { ApiError } from "../../utilities/apiError";
-import { isValidId } from "../../utilities/validateUUID";
+
 import { messageService } from "../infrastructure/dependecies";
 import { ErrorMessage } from "../../utilities/ErrorMessage";
 
