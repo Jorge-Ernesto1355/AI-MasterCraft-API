@@ -51,6 +51,13 @@ export class MessageService implements messageRepository {
       if (projectIA instanceof IA_NOT_FOUND) throw new Error(IA_NOT_FOUND_MSG);
       const outputIA = await projectIA.run(prompt);
 
+      const AIMessage = await this.createMessage({
+        output: this.contentFormatter.format(outputIA),
+        isIA: true,
+        userId: projectIA.userId,
+        AImodelId: projectIA.ModelId,
+        projectId,
+      });
       // creation of user message
       await this.createMessage({
         output: this.contentFormatter.format({ output: prompt }),
@@ -60,13 +67,6 @@ export class MessageService implements messageRepository {
         projectId,
       });
 
-      const AIMessage = await this.createMessage({
-        output: this.contentFormatter.format(outputIA),
-        isIA: true,
-        userId: projectIA.userId,
-        AImodelId: projectIA.ModelId,
-        projectId,
-      });
 
       return AIMessage.toJSON();
     } catch (error) {
