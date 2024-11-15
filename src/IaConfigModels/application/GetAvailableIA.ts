@@ -4,17 +4,15 @@ import { StatusCodes } from "http-status-codes";
 import { ApiError } from "../../utilities/apiError";
 
 
-export class GetAvailableIA {
+export class      GetAvailableIA {  
   async run(req: Request, res: Response) {
     try {
-      const { userId: userIdParams } = req.params;
-      const { modelType: modelTypeQuery } = req.query;
+     
+      const { type: modelTypeQuery } = req.query;
 
       const modelType = this.parseModelType(modelTypeQuery);
 
-      const userId = this.validateUserId(userIdParams);
-
-      const projectIaService = await iaServiceFactory.create(userId);
+      const projectIaService = await iaServiceFactory.create();
 
       if (projectIaService instanceof Error)
         throw new Error(projectIaService.message);
@@ -23,18 +21,15 @@ export class GetAvailableIA {
 
       return res.status(StatusCodes.OK).json(availableIAs);
     } catch (error) {
+    
       return this.handleError(error, res);
     }
   }
 
-  private validateUserId(userId: unknown): string {
-    if (typeof userId !== "string" || !userId.trim()) {
-      throw new Error("Valid user ID must be provided");
-    }
-    return userId;
-  }
+ 
 
   private handleError(error: unknown, res: Response): Response {
+    
     if (error instanceof ApiError) {
       return res.status(error.statusCode).json({
         status: "error",

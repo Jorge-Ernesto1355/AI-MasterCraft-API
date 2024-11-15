@@ -97,7 +97,7 @@ export class IAMongoRepository implements IARepository {
       const projects = await projectIASchema
         .find({ userId })
         .populate("userId", ["name", "email", "username"])
-        .populate("AImodelId", ["modelName", "organization", "imageUrl"]);
+        .populate("modelId", ["modelName", "organization", "imageUrl"]);
 
       if (projects.length <= 0) return [];
       const projectsToDomain = projects.map((project) => {

@@ -2,14 +2,14 @@ import { User, UserDTO } from "../../users/domain/entities/User";
 import { NotFoundUser, NotFoundUserMsg } from "../../users/domain/ErrorsUser";
 import { userRepository } from "../../users/domain/interfaces/userRepository.interface";
 import { IAModelDTO } from "./entities/IAModel";
-import { MessageDTO } from "./entities/Message";
+
 import ProjectIa from "./entities/ProjectAI";
 
 import { IA_NOT_FOUND, IA_NOT_FOUND_MSG } from "./IAErrors";
 import { IARepository } from "./interfaces/IARepository.interface";
 import { AIService } from "./interfaces/IAServices.interface";
 import { Project } from "./interfaces/Project.interface";
-import ContentFormatter from "./utils/ContentFormatter";
+
 
 export interface createMessageProps {
   user: UserDTO | null;
@@ -19,31 +19,27 @@ export interface createMessageProps {
   isIA: boolean;
   projectId: string;
 }
-
 export class IAService implements AIService {
   private readonly IArepository: IARepository;
-  private user: User;
-  private contentFormatter: ContentFormatter;
+  private user: User | null;
 
-  constructor(IaRepository: IARepository, user: User) {
+  constructor(IaRepository: IARepository, user: User | null) {
     this.IArepository = IaRepository;
     this.user = user;
-    this.contentFormatter = new ContentFormatter();
+  
   }
- 
 
   async getAvailableIA(modelType: string | undefined): Promise<IAModelDTO[]> {
     try {
       const modelsAvaiabels = await this.IArepository.getAvailableIA(modelType);
-      console.log(modelsAvaiabels)
-     const modelsDTO = modelsAvaiabels.map((model)=> model.toJSON())
-     return modelsDTO
+      const modelsDTO = modelsAvaiabels.map((model) => model.toJSON());
+      return modelsDTO;
     } catch (error) {
       if (error instanceof Error) throw new Error(error.message);
-
       throw new Error("something went wrong with projects");
     }
   }
+
   async getProjects(userId: string): Promise<Project[]> {
     try {
       const projects = await this.IArepository.getProjects(userId);
@@ -61,13 +57,15 @@ export class IAService implements AIService {
       return projectIA.toJSON();
     } catch (error) {
       if (error instanceof Error) return new Error(error.message);
-
       return new Error("Something went wrong with the project");
     }
   }
 
   async save(project: Omit<Project, "_id">): Promise<Project> {
     try {
+      if (!this.user) {
+        throw new Error("User is required to save a project");
+      }
       const newProject = await this.IArepository.save({
         ...project,
         userId: this.user.getId(),
@@ -78,7 +76,6 @@ export class IAService implements AIService {
       throw new Error("Something went wrong");
     }
   }
-
 
   private async getValidProjectIA(projectId: string): Promise<ProjectIa> {
     const projectIA = await this.IArepository.getIAById(projectId);
@@ -91,22 +88,16 @@ export class IAService implements AIService {
     return projectIA;
   }
 
- async  searchModelByName(search: string): Promise<IAModelDTO[]> {
-
-     try {
-      const models = await this.IArepository.searchByModelName(search)
-      const modelsDTO = models.map((model)=> model.toJSON())
-      return modelsDTO
-     } catch (error) {
+  async searchModelByName(search: string): Promise<IAModelDTO[]> {
+    try {
+      const models = await this.IArepository.searchByModelName(search);
+      const modelsDTO = models.map((model) => model.toJSON());
+      return modelsDTO;
+    } catch (error) {
       if (error instanceof Error) throw new Error(error.message);
       throw new Error("Something went wrong");
-     }
-
-
-      
+    }
   }
-
-
 }
 
 export class IaServiceFactory {
@@ -114,17 +105,26 @@ export class IaServiceFactory {
     private userRepository: userRepository,
     private IArepository: IARepository
   ) {
-    (this.userRepository = userRepository), (this.IArepository = IArepository);
+    this.userRepository = userRepository;
+    this.IArepository = IArepository;
   }
 
-  async create(userId: string): Promise<IAService | Error> {
+  async create(userId?: string): Promise<IAService | Error> {
     try {
-      const user = await this.userRepository.getUserById(userId);
-      if (user instanceof NotFoundUser) throw new Error(NotFoundUserMsg);
-
+      let user: User | null = null;
+      if (userId) {
+        const fetchedUser = await this.userRepository.getUserById(userId);
+        if (fetchedUser instanceof NotFoundUser) {
+          throw new Error(NotFoundUserMsg);
+        }
+        user = fetchedUser;
+      }
       return new IAService(this.IArepository, user);
     } catch (error) {
-      throw new Error("Something went wrong with the creation of service");
+      if (error instanceof Error) {
+        return new Error("Something went wrong with the creation of service: " + error.message);
+      }
+      return new Error("Something went wrong with the creation of service");
     }
   }
 }

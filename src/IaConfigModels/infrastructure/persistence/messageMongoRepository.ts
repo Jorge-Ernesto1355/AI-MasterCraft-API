@@ -72,11 +72,10 @@ export class messageMongoRepository implements messageRepository {
         projectId,
         userId,
       };
-
       const options = {
         limit,
         page,
-        sort: { created: -1 },
+        sort: { createdAt: -1 }, // Ordenar los mensajes de más reciente a más antiguo
         populate: [
           {
             path: "AImodelId",

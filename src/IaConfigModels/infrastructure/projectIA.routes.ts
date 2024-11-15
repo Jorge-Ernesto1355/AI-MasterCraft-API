@@ -15,7 +15,7 @@ IARouter.get("/:projectIAId", getById.run.bind(getById));
 IARouter.get("/projects/:userId", getProjects.run.bind(getProjects));
 
 IARouter.get(
-  "/available-models/:userId",
+  "/available-models",
   getAvailableIA.run.bind(getAvailableIA)
 );
 

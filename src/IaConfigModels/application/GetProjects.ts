@@ -16,6 +16,7 @@ export class GetProjects {
 
       return res.status(StatusCodes.OK).json(projectIa);
     } catch (error) {
+      console.log(error)
       return this.handleError(error, res);
     }
   }
