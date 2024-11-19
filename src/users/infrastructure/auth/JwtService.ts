@@ -50,7 +50,22 @@ export class JWTService implements tokenService {
         userId: decodedToken.userId,
       };
     } catch (error) {
-     
+      return this.handleTokenError(error);
+    }
+  }
+
+  verifyAcessToken(token: string): TokenVerificationResult {
+    try {
+      const decodedToken = jwt.verify(
+        token,
+        this.ACCESS_TOKEN_SECRET
+      ) as tokenPayload;
+
+      return {
+        isValid: true,
+        userId: decodedToken.userId,
+      };
+    } catch (error) {
       return this.handleTokenError(error);
     }
   }
