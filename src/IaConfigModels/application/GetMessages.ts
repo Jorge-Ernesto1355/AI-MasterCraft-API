@@ -7,22 +7,13 @@ import { ApiError } from "../../utilities/apiError";
 import { messageService } from "../infrastructure/dependecies";
 import { ErrorMessage } from "../../utilities/ErrorMessage";
 
-interface GetMessagesQuery {
-  limit?: string;
-  page?: string;
-  userId: string;
-}
-
 export class GetMessages {
-  async run(
-    req: Request<{ projectId: string }, {}, {}, GetMessagesQuery>,
-    res: Response
-  ) {
+  async run(req: Request, res: Response) {
     try {
       const { projectId } = req.params;
       const { limit, page, userId } = req.query;
 
-      if (!projectId || !userId) {
+      if (!projectId || !userId || !page || !limit) {
         throw new ApiError(ErrorMessage.ParametersMustBeDefined);
       }
 
