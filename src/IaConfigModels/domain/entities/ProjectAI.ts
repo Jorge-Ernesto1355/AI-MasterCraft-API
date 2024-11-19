@@ -19,12 +19,14 @@ class ProjectIa {
 
   constructor(config: ProjectIaConfig) {
     this.config = config;
-    this.model = new IAModel(
-      config.modelId,
-      config.organization,
-      config.modelName,
-      config.config
-    );
+    this.model = new IAModel({
+      id: config._id,
+      modelName: config.modelName,
+      modelType: config.modelType,
+      organization: config.organization,
+      config: config.config,
+      imageUrl: "",
+    });
   }
 
   public run(prompt: string) {
