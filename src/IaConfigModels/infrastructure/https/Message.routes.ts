@@ -1,10 +1,19 @@
 import { Router } from "express";
 import { generateIA, getMessages } from "../../application";
+import { accessTokenValidation } from "../../application/middlewares/accessTokenValidation";
 
 const MessageRouter = Router();
 
-MessageRouter.post("/generateIA/:projectId", generateIA.run.bind(generateIA));
+MessageRouter.post(
+  "/generateIA/:projectId",
+  accessTokenValidation,
+  generateIA.run.bind(generateIA)
+);
 
-MessageRouter.get("/:projectId", getMessages.run.bind(getMessages));
+MessageRouter.get(
+  "/:projectId",
+  accessTokenValidation,
+  getMessages.run.bind(getMessages)
+);
 
 export default MessageRouter;

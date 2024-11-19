@@ -6,22 +6,26 @@ import {
   getProjects,
   searchModelByName,
 } from "../../application";
+import { accessTokenValidation } from "../../application/middlewares/accessTokenValidation";
 
 const IARouter = Router();
 
-IARouter.get("/:projectIAId", getById.run.bind(getById));
-
-IARouter.get("/projects/:userId", getProjects.run.bind(getProjects));
+IARouter.get("/:projectIAId", accessTokenValidation, getById.run.bind(getById));
 
 IARouter.get(
-  "/models/available",
-  getAvailableIA.run.bind(getAvailableIA)
+  "/projects/:userId",
+  accessTokenValidation,
+  getProjects.run.bind(getProjects)
 );
 
-IARouter.post("/:userId", createProjectAI.run.bind(createProjectAI));
+IARouter.get("/models/available", getAvailableIA.run.bind(getAvailableIA));
 
-IARouter.get('/search/:userId', searchModelByName
-  .run.bind(searchModelByName))
+IARouter.post(
+  "/:userId",
+  accessTokenValidation,
+  createProjectAI.run.bind(createProjectAI)
+);
 
+IARouter.get("/search/:userId", searchModelByName.run.bind(searchModelByName));
 
 export default IARouter;
