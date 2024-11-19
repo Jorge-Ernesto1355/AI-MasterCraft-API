@@ -11,23 +11,27 @@ export class DefaultOutputStrategy implements OutputStrategy {
 }
 
 export class StreamingOutputStrategy implements OutputStrategy {
-  async processOutput(rawOutput: AsyncIterable<any>): Promise<AIModelOutput> {
-    let fullOutput = "";
-    const chunks: string[] = [];
-
-    for await (const chunk of rawOutput) {
-      const processedChunk = chunk.data.toString();
-      fullOutput += processedChunk;
-      chunks.push(processedChunk);
+  async processOutput(output: any): Promise<AIModelOutput> {
+    if (typeof output === "string") {
+      return { output: output.replace(/\{\}/g, "").trim() };
     }
 
-    return {
-      output: fullOutput,
-      stream: (async function* () {
-        for (const chunk of chunks) {
-          yield chunk;
+    // Handle streaming output
+    let processedOutput = "";
+    try {
+      for await (const chunk of output) {
+        if (chunk.data) {
+          const text =
+            typeof chunk.data === "string"
+              ? chunk.data
+              : JSON.stringify(chunk.data);
+          processedOutput += text.replace(/\{\}/g, "").trim();
         }
-      })(),
-    };
+      }
+    } catch (error) {
+      throw error;
+    }
+
+    return { output: processedOutput };
   }
 }
