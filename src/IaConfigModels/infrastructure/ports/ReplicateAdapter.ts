@@ -12,8 +12,10 @@ import {
 import dotenv from "dotenv";
 
 dotenv.config();
-
 export class ReplicateAdapter extends AbstractAIModel {
+  protected stream(input: AIModelInput): Promise<AIModelOutput> {
+    throw new Error("Method not implemented.");
+  }
   private readonly replicate: Replicate;
   private outputStrategy: OutputStrategy;
 
@@ -30,13 +32,18 @@ export class ReplicateAdapter extends AbstractAIModel {
   }
 
   shouldUseStreaming(): boolean {
-    return ["meta", "mistralai"].some((org) => this.organization.includes(org));
+    return ["meta", "mistralai", "ibm-granite"].some((org) =>
+      this.organization.includes(org)
+    );
   }
 
   prepareInput(input: AIModelInput): Record<string, unknown> {
     const { prompt, config } = input;
-
-    return { prompt, ...config };
+    return {
+      prompt,
+      ...config,
+      stream: this.shouldUseStreaming(), // Explicitly set streaming parameter
+    };
   }
 
   public async generate(
@@ -44,35 +51,52 @@ export class ReplicateAdapter extends AbstractAIModel {
     config: Record<string, unknown>
   ): Promise<AIModelOutput> {
     const input: AIModelInput = { prompt, config };
+
+    if (this.shouldUseStreaming()) {
+      return this.streamWithRetry(input);
+    }
+
     const rawOutput = await this.executeModel(input);
     return await this.outputStrategy.processOutput(rawOutput);
   }
 
-  async executeModel(input: AIModelInput): Promise<any> {
-    const preparedInput = this.prepareInput(input);
-    const modelString = this.getModelString();
+  private async streamWithRetry(
+    input: AIModelInput,
+    maxRetries: number = 3
+  ): Promise<AIModelOutput> {
+    let lastError;
 
-    if (this.shouldUseStreaming()) {
-      this.outputStrategy = new StreamingOutputStrategy();
-      return this.replicate.stream(modelString, { input: preparedInput });
-    } else {
-      return this.replicate.run(modelString, { input: preparedInput });
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        return await this.handleStreamingOutput(input);
+      } catch (error) {
+        lastError = error;
+        console.warn(`Streaming attempt ${attempt + 1} failed, retrying...`);
+        await new Promise((resolve) =>
+          setTimeout(resolve, 1000 * (attempt + 1))
+        );
+      }
     }
+
+    throw lastError;
   }
 
-  async stream(input: AIModelInput): Promise<AIModelOutput> {
+  private async handleStreamingOutput(
+    input: AIModelInput
+  ): Promise<AIModelOutput> {
     const preparedInput = this.prepareInput(input);
-    let output = "";
+    const streamingStrategy = new StreamingOutputStrategy();
 
-    for await (const event of this.replicate.stream(this.getModelString(), {
+    const stream = await this.replicate.stream(this.getModelString(), {
       input: preparedInput,
-    })) {
-      const chunk = event.data.toString();
-      output += chunk;
-      process.stdout.write(chunk);
-    }
+    });
 
-    return { output };
+    return streamingStrategy.processOutput(stream);
+  }
+
+  async executeModel(input: AIModelInput): Promise<any> {
+    const preparedInput = this.prepareInput(input);
+    return this.replicate.run(this.getModelString(), { input: preparedInput });
   }
 
   getModelString(): `${string}/${string}` | `${string}/${string}:${string}` {
