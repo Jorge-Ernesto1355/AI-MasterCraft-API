@@ -23,8 +23,10 @@ const ContentSchema = new Schema({
   type: {
     type: String,
     required: true,
-    enum: ["text", "image", "audio", "video", "file"],
+    enum: ["text", "image", "audio", "video", "file", "code"],
   },
+  language: { type: String },
+  framework: { type: String },
   data: { type: String, required: true },
   mimeType: { type: String },
 });
