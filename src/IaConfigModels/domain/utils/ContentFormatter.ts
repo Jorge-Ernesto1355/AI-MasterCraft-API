@@ -1,27 +1,29 @@
 import { createCustomError } from "../../../utilities/ErrorFactory";
+import { AIModelOutput } from "../entities/abstractAIModel";
+import { IContent } from "../interfaces/Message.interface";
+import { contentFormatterCode } from "./ContentFormatteCode";
 
-const NotProcessed = createCustomError("NotProcessed");
 
-interface IContent {
-  type: "text" | "image" | "audio" | "video" | "file";
-  data: string;
-  mimeType?: string;
-}
+export const NotProcessed = createCustomError("NotProcessed");
 
-type OutputProcessor = (output: unknown) => IContent[] | Error;
+type OutputProcessor = (output: AIModelOutput) => IContent[] | Error;
 
 class ContentFormatter {
   private processors: OutputProcessor[];
+  private contentFormatterCode: contentFormatterCode;
 
   constructor() {
+    this.contentFormatterCode = new contentFormatterCode();
+
     this.processors = [
+      this.contentFormatterCode.proccesor.bind(this.contentFormatterCode),
       this.processArray,
       this.processStringOutput,
       this.processDefault,
     ];
   }
 
-  public format(output: unknown): IContent[] {
+  public format(output: AIModelOutput): IContent[] {
     for (const processor of this.processors) {
       const result = processor(output);
       if (!(result instanceof NotProcessed)) return result;
@@ -35,15 +37,15 @@ class ContentFormatter {
     return new NotProcessed("array not processed");
   }
 
-  private processStringOutput(output: unknown): IContent[] | Error {
+  private processStringOutput(output: AIModelOutput): IContent[] | Error {
     if (typeof output === "object" && output !== null && "output" in output) {
-      const { output: stringOutput } = output as { output: unknown };
-      if (typeof stringOutput === "string") {
-        return [{ type: "text", data: stringOutput }];
-      }
+      return [{ type: "text", data: output.output }];
     }
     return new NotProcessed("string output not processed");
   }
+
+ 
+ 
 
   private processDefault(output: unknown): IContent[] {
     return [{ type: "text", data: JSON.stringify(output) }];
@@ -52,6 +54,8 @@ class ContentFormatter {
   private isValidContentArray(arr: unknown[]): arr is IContent[] {
     return arr.every((item) => typeof item === "string");
   }
+
+
 }
 
 export default ContentFormatter;
