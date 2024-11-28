@@ -32,9 +32,7 @@ export class IAModel {
       this.modelName
     );
 
-    return {
-      output: "sisisiis",
-    };
+    return replicateAdapter.generate(prompt, this.config);
   }
 
   public toJSON(): IAModelDTO {
