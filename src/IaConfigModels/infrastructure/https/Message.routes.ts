@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { generateIA, getMessages } from "../../application";
-import { accessTokenValidation } from "../../application/middlewares/accessTokenValidation";
+import { accessTokenValidation } from "../../../users/infrastructure/auth/middlewares/accessTokenValidation";
 
 const MessageRouter = Router();
 
