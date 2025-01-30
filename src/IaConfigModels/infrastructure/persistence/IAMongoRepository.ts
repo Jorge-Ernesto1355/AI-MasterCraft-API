@@ -1,10 +1,14 @@
-import { IAModel, IAModelDTO } from "../../domain/entities/IAModel";
+import { IAModel } from "../../domain/entities/IAModel";
 import ProjectIa from "../../domain/entities/ProjectAI";
 import { IA_NOT_FOUND, IA_NOT_FOUND_MSG } from "../../domain/IAErrors";
 import { IARepository } from "../../domain/interfaces/IARepository.interface";
 import { Project } from "../../domain/interfaces/Project.interface";
 import { AImodelMapper } from "../mappers/AImodelMapper";
 import { ProjectIaMapper } from "../mappers/projectIaMapper";
+import {
+  AIResponseConfigurations,
+  typeConfig,
+} from "./AIResponseConfiguration";
 import AIModel from "./modelsAI";
 import projectIASchema from "./ProjectIASchema";
 
@@ -119,5 +123,26 @@ export class IAMongoRepository implements IARepository {
     const modelsDomain = models.map((model) => AImodelMapper.toDomain(model));
 
     return modelsDomain;
+  }
+
+  async editConfigProject(
+    projectId: string,
+    typeConfig: typeConfig
+  ): Promise<void | Error> {
+    try {
+      const project = await projectIASchema.findById(projectId);
+      console.log(project);
+      if (!project) throw new IA_NOT_FOUND(IA_NOT_FOUND_MSG);
+
+      const AIconfig = AIResponseConfigurations[typeConfig];
+      if (!AIconfig) throw new Error("not configuration available");
+
+      await projectIASchema.updateOne(
+        { _id: projectId },
+        { $set: { config: AIconfig } }
+      );
+    } catch (error) {
+      throw error;
+    }
   }
 }
