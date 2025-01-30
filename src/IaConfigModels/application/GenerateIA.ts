@@ -22,7 +22,6 @@ export class GenerateIA {
 
       return res.status(StatusCodes.OK).json(messageWithAI);
     } catch (error) {
-      console.log(error);
       return this.handleError(error, res);
     }
   }
