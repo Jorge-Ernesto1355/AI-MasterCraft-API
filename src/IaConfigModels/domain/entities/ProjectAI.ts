@@ -12,6 +12,11 @@ interface ProjectIaConfig {
   modelId: string;
 }
 
+export interface IARequestContext {
+  userId: string;
+  prompt: string;
+}
+
 class ProjectIa {
   private readonly model: IAModel;
   private readonly config: ProjectIaConfig;
@@ -29,8 +34,8 @@ class ProjectIa {
     });
   }
 
-  public run(prompt: string) {
-    return this.model.run(prompt);
+  public run(context: IARequestContext) {
+    return this.model.run(context);
   }
 
   public getModelToJson() {
