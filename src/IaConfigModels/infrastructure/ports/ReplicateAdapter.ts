@@ -1,34 +1,38 @@
+import "reflect-metadata";
 import Replicate from "replicate";
 import {
-  AbstractAIModel,
   AIModelInput,
   AIModelOutput,
 } from "../../domain/entities/abstractAIModel";
 import {
   DefaultOutputStrategy,
   OutputStrategy,
-  StreamingOutputStrategy,
+  streamingOutputStrategy,
 } from "./Strategy/StategyOutPut";
 import dotenv from "dotenv";
+import { inject, injectable } from "tsyringe";
+import { SSEService } from "../../../users/application/services/SSEService";
+import { IARequestContext } from "../../domain/entities/ProjectAI";
 
 dotenv.config();
-export class ReplicateAdapter extends AbstractAIModel {
-  protected stream(input: AIModelInput): Promise<AIModelOutput> {
-    throw new Error("Method not implemented.");
-  }
+@injectable()
+export class ReplicateAdapter {
   private readonly replicate: Replicate;
-  private outputStrategy: OutputStrategy;
+  private readonly organization: string;
+  private readonly modelName: string;
 
   constructor(
+    @inject("OutputStrategy")
+    private outputStrategy: OutputStrategy = new DefaultOutputStrategy(),
+    @inject("SSEService") private sseService: SSEService,
     organization: string,
-    modelName: string,
-    outputStrategy?: OutputStrategy
+    modelName: string
   ) {
-    super(organization, modelName);
     this.replicate = new Replicate({
       auth: process.env.REPLICATE_API_TOKEN,
     });
-    this.outputStrategy = outputStrategy || new DefaultOutputStrategy();
+    this.organization = organization;
+    this.modelName = modelName;
   }
 
   shouldUseStreaming(): boolean {
@@ -47,17 +51,20 @@ export class ReplicateAdapter extends AbstractAIModel {
   }
 
   public async generate(
-    prompt: string,
+    context: IARequestContext,
     config: Record<string, unknown>
   ): Promise<AIModelOutput> {
-    const input: AIModelInput = { prompt, config };
+    const input: AIModelInput = { ...context, config };
 
     if (this.shouldUseStreaming()) {
-      return this.streamWithRetry(input);
+      const streamingOutput = await this.streamWithRetry(input);
+
+      return streamingOutput;
     }
 
     const rawOutput = await this.executeModel(input);
-    return await this.outputStrategy.processOutput(rawOutput);
+
+    return await this.outputStrategy.processOutput(rawOutput as any);
   }
 
   private async streamWithRetry(
@@ -71,7 +78,6 @@ export class ReplicateAdapter extends AbstractAIModel {
         return await this.handleStreamingOutput(input);
       } catch (error) {
         lastError = error;
-        console.warn(`Streaming attempt ${attempt + 1} failed, retrying...`);
         await new Promise((resolve) =>
           setTimeout(resolve, 1000 * (attempt + 1))
         );
@@ -85,15 +91,44 @@ export class ReplicateAdapter extends AbstractAIModel {
     input: AIModelInput
   ): Promise<AIModelOutput> {
     const preparedInput = this.prepareInput(input);
-    const streamingStrategy = new StreamingOutputStrategy();
-
-    const stream = await this.replicate.stream(this.getModelString(), {
+    const streamingStrategy = new streamingOutputStrategy();
+    const output = this.replicate.stream(this.getModelString(), {
       input: preparedInput,
     });
 
-    return streamingStrategy.processOutput(stream);
-  }
+    let contentArray: string = "";
+    let lastChunk: string = "";
+    let isComplete = false;
 
+    const stream = streamingStrategy.createSSEStream(output);
+    await stream.pipeTo(
+      new WritableStream({
+        write: async (chunk) => {
+          const parsedChunk = streamingStrategy.parseSSEChunk(chunk);
+
+          if (parsedChunk) {
+            contentArray = contentArray + parsedChunk.data;
+            lastChunk = parsedChunk.data; // Store the last chunk separately
+            await this.sseService?.sendAIProgress(
+              input.userId,
+              1,
+              parsedChunk.data
+            );
+          }
+        },
+        close: async () => {
+          await this.sseService?.sendAIComplete(input.userId, lastChunk); // Send only the last chunk
+          isComplete = true;
+        },
+      })
+    );
+
+    if (isComplete) {
+      return { output: contentArray }; // Return only the last chunk
+    }
+
+    return { output: contentArray }; // Return only the last chunk in case of early return
+  }
   async executeModel(input: AIModelInput): Promise<any> {
     const preparedInput = this.prepareInput(input);
     return this.replicate.run(this.getModelString(), { input: preparedInput });
