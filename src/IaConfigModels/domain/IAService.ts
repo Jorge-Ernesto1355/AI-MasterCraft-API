@@ -1,3 +1,4 @@
+import { inject, injectable } from "tsyringe";
 import { User, UserDTO } from "../../users/domain/entities/User";
 import { NotFoundUser, NotFoundUserMsg } from "../../users/domain/ErrorsUser";
 import { userRepository } from "../../users/domain/interfaces/userRepository.interface";
@@ -9,7 +10,7 @@ import { IA_NOT_FOUND, IA_NOT_FOUND_MSG } from "./IAErrors";
 import { IARepository } from "./interfaces/IARepository.interface";
 import { AIService } from "./interfaces/IAServices.interface";
 import { Project } from "./interfaces/Project.interface";
-
+import { typeConfig } from "../infrastructure/persistence/AIResponseConfiguration";
 
 export interface createMessageProps {
   user: UserDTO | null;
@@ -19,6 +20,7 @@ export interface createMessageProps {
   isIA: boolean;
   projectId: string;
 }
+@injectable()
 export class IAService implements AIService {
   private readonly IArepository: IARepository;
   private user: User | null;
@@ -26,7 +28,6 @@ export class IAService implements AIService {
   constructor(IaRepository: IARepository, user: User | null) {
     this.IArepository = IaRepository;
     this.user = user;
-  
   }
 
   async getAvailableIA(modelType: string | undefined): Promise<IAModelDTO[]> {
@@ -98,16 +99,33 @@ export class IAService implements AIService {
       throw new Error("Something went wrong");
     }
   }
+
+  async editConfigProject(
+    projectId: string,
+    typeConfig: typeConfig
+  ): Promise<void | Error> {
+    try {
+      const project = await this.IArepository.getIAById(projectId);
+      if (project instanceof IA_NOT_FOUND) throw new Error(IA_NOT_FOUND_MSG);
+
+      await this.IArepository.editConfigProject(projectId, typeConfig);
+    } catch (error) {
+      if (error instanceof Error) {
+        return new Error(
+          "Something went wrong with the creation of service: " + error.message
+        );
+      }
+      return new Error("Something went wrong with the creation of service");
+    }
+  }
 }
 
+@injectable()
 export class IaServiceFactory {
   constructor(
-    private userRepository: userRepository,
-    private IArepository: IARepository
-  ) {
-    this.userRepository = userRepository;
-    this.IArepository = IArepository;
-  }
+    @inject("UserRepository") private readonly userRepository: userRepository,
+    @inject("IARepository") private readonly IArepository: IARepository
+  ) {}
 
   async create(userId?: string): Promise<IAService | Error> {
     try {
@@ -122,7 +140,9 @@ export class IaServiceFactory {
       return new IAService(this.IArepository, user);
     } catch (error) {
       if (error instanceof Error) {
-        return new Error("Something went wrong with the creation of service: " + error.message);
+        return new Error(
+          "Something went wrong with the creation of service: " + error.message
+        );
       }
       return new Error("Something went wrong with the creation of service");
     }
