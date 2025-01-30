@@ -1,50 +1,63 @@
-import winston from "winston";
-import { environment } from "../config/environment";
+import fs from "fs";
+import path from "path";
 
-const levels = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  http: 3,
-  debug: 4,
-};
+enum LogLevel {
+  ERROR = "ERROR",
+  WARN = "WARN",
+  INFO = "INFO",
+  DEBUG = "DEBUG",
+}
 
-const level = () => {
-  const env = environment.nodeEnv || "development";
-  const isDevelopment = env === "development";
-  return isDevelopment ? "debug" : "warn";
-};
+class Logger {
+  private logDir: string;
+  private logFile: string;
 
-const colors = {
-  error: "red",
-  warn: "yellow",
-  info: "green",
-  http: "magenta",
-  debug: "white",
-};
+  constructor(logDir: string = "logs") {
+    this.logDir = logDir;
+    this.logFile = path.join(logDir, "app.log");
+    this.initializeLogDir();
+  }
 
-winston.addColors(colors);
+  private initializeLogDir(): void {
+    if (!fs.existsSync(this.logDir)) {
+      fs.mkdirSync(this.logDir);
+    }
+  }
 
-const format = winston.format.combine(
-  winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }),
-  winston.format.colorize({ all: true }),
-  winston.format.printf(
-    (info: any) => `${info.timestamp} ${info.level}: ${info.message}`
-  )
-);
+  private formatMessage(
+    level: LogLevel,
+    message: string,
+    metadata?: object
+  ): string {
+    const timestamp = new Date().toISOString();
+    const metadataStr = metadata ? ` ${JSON.stringify(metadata)}` : "";
+    return `${timestamp} [${level}] ${message}${metadataStr}\n`;
+  }
 
-const transports = [
-  new winston.transports.Console(),
-  new winston.transports.File({
-    filename: "logs/error.log",
-    level: "error",
-  }),
-  new winston.transports.File({ filename: "logs/all.log" }),
-];
+  private writeToFile(message: string): void {
+    fs.appendFileSync(this.logFile, message);
+  }
 
-export const logger = winston.createLogger({
-  level: level(),
-  levels,
-  format,
-  transports,
-});
+  private log(level: LogLevel, message: string, metadata?: object): void {
+    const formattedMessage = this.formatMessage(level, message, metadata);
+    this.writeToFile(formattedMessage);
+  }
+
+  error(message: string, metadata?: object): void {
+    this.log(LogLevel.ERROR, message, metadata);
+  }
+
+  warn(message: string, metadata?: object): void {
+    this.log(LogLevel.WARN, message, metadata);
+  }
+
+  info(message: string, metadata?: object): void {
+    this.log(LogLevel.INFO, message, metadata);
+  }
+
+  debug(message: string, metadata?: object): void {
+    this.log(LogLevel.DEBUG, message, metadata);
+  }
+}
+
+export default Logger;
