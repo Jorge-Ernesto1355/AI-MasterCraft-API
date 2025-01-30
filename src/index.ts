@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { server } from "./config";
 import dotenv from "dotenv";
 
