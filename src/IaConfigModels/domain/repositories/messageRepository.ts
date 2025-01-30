@@ -1,3 +1,4 @@
+import { inject, injectable } from "tsyringe";
 import { PaginatedMessage } from "../../infrastructure/persistence/messageMongoRepository";
 import { Message, MessageDTO } from "../entities/Message";
 import {
@@ -6,12 +7,12 @@ import {
   messageRepository as MessageRepository,
 } from "../interfaces/messageRepository.interface";
 
+@injectable()
 export class messageRepository implements MessageRepository {
-  private repository: MessageRepository;
-
-  constructor(repository: MessageRepository) {
-    this.repository = repository;
-  }
+  constructor(
+    @inject("messageRepositorydb")
+    private readonly repository: messageRepository
+  ) {}
   generateIAMessage(projectId: string, prompt: string): Promise<MessageDTO> {
     return this.repository.generateIAMessage(projectId, prompt);
   }
