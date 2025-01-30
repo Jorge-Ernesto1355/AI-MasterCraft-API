@@ -1,10 +1,12 @@
+import "reflect-metadata";
+import "./users/infrastructure/persistence/containerConfig";
 import express, { Application } from "express";
 import { IncomingMessage, ServerResponse } from "http";
 import cors from "cors";
 import { corsOptions } from "./utilities/corsOptions";
 import dotenv from "dotenv";
 import { mongoDB } from "./db/mongoDb";
-import { userRouter } from "./users/infrastructure/userRoute.routes";
+import { userRouter } from "./users/infrastructure/https/userRoute.routes";
 import IARouter from "./IaConfigModels/infrastructure/https/projectIA.routes";
 import MessageRouter from "./IaConfigModels/infrastructure/https/Message.routes";
 import bodyParser from "body-parser";
@@ -24,6 +26,14 @@ export class server {
   }
 
   private middleware(): void {
+    this.app.use(
+      cors({
+        origin: "http://localhost:5173", // Your frontend URL
+        credentials: true, // Important! This enables Access-Control-Allow-Credentials
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      })
+    );
+
     this.app.use(express.json({ limit: "5mb" }));
     this.app.use(express.urlencoded({ limit: "5mb", extended: true }));
     this.app.use(cors(corsOptions));
