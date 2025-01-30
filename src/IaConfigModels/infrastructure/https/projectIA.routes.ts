@@ -1,12 +1,13 @@
 import { Router } from "express";
 import {
   createProjectAI,
+  editConfigProject,
   getAvailableIA,
   getById,
   getProjects,
   searchModelByName,
 } from "../../application";
-import { accessTokenValidation } from "../../application/middlewares/accessTokenValidation";
+import { accessTokenValidation } from "../../../users/infrastructure/auth/middlewares/accessTokenValidation";
 
 const IARouter = Router();
 
@@ -27,5 +28,10 @@ IARouter.post(
 );
 
 IARouter.get("/search/:userId", searchModelByName.run.bind(searchModelByName));
+
+IARouter.put(
+  "/edit/config/:projectIAId",
+  editConfigProject.run.bind(editConfigProject)
+);
 
 export default IARouter;
