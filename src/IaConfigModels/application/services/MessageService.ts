@@ -11,7 +11,6 @@ import {
 import ContentFormatter from "../../domain/utils/ContentFormatter";
 import { PaginatedMessage } from "../../infrastructure/persistence/messageMongoRepository";
 import { inject, injectable } from "tsyringe";
-import instance from "tsyringe/dist/typings/dependency-container";
 
 @injectable()
 export class MessageService implements messageRepository {
