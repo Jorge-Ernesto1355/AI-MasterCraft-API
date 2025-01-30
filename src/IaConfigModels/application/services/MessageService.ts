@@ -1,3 +1,5 @@
+import { set } from "mongoose";
+import { SSEService } from "../../../users/application/services/SSEService";
 import { MessageDTO } from "../../domain/entities/Message";
 import { IA_NOT_FOUND, IA_NOT_FOUND_MSG } from "../../domain/IAErrors";
 import { IARepository } from "../../domain/interfaces/IARepository.interface";
@@ -8,18 +10,21 @@ import {
 } from "../../domain/interfaces/messageRepository.interface";
 import ContentFormatter from "../../domain/utils/ContentFormatter";
 import { PaginatedMessage } from "../../infrastructure/persistence/messageMongoRepository";
+import { inject, injectable } from "tsyringe";
+import instance from "tsyringe/dist/typings/dependency-container";
 
+@injectable()
 export class MessageService implements messageRepository {
-  private messageRepository: messageRepository;
-  private projectRepository: IARepository;
   private contentFormatter: ContentFormatter;
 
   constructor(
-    messageRepository: messageRepository,
-    projectRepository: IARepository
+    @inject("SSEService") private readonly sseService: SSEService,
+
+    @inject("messageRepository")
+    private readonly messageRepository: messageRepository,
+
+    @inject("IARepository") private readonly IArepository: IARepository
   ) {
-    this.messageRepository = messageRepository;
-    this.projectRepository = projectRepository;
     this.contentFormatter = new ContentFormatter();
   }
   async getMessages({
@@ -41,35 +46,32 @@ export class MessageService implements messageRepository {
       throw new Error("Something went wrong with message");
     }
   }
-  async generateIAMessage(
-    projectId: string,
-    prompt: string
-  ): Promise<MessageDTO> {
+  async generateIAMessage(projectId: string, prompt: string) {
     try {
-      const projectIA = await this.projectRepository.getIAById(projectId);
-      if (projectIA instanceof IA_NOT_FOUND) throw new Error(IA_NOT_FOUND_MSG);
-      const outputIA = await projectIA.run(prompt);
+      const AIProject = await this.IArepository.getIAById(projectId);
+      if (AIProject instanceof Error) throw new Error("Project not found");
+      const output = await AIProject.run({
+        userId: AIProject.userId,
+        prompt: prompt,
+      });
 
-      await this.createMessage({
+      await this.messageRepository.createMessage({
+        userId: AIProject.userId,
+        AImodelId: AIProject.ModelId,
         output: this.contentFormatter.format({ output: prompt }),
-        userId: projectIA.userId,
         isIA: false,
-        AImodelId: projectIA.ModelId,
         projectId,
       });
-      const AIMessage = await this.createMessage({
-        output: this.contentFormatter.format(outputIA),
-        isIA: true,
-        userId: projectIA.userId,
-        AImodelId: projectIA.ModelId,
-        projectId,
-      });
-      // creation of user message
 
-      return AIMessage.toJSON();
+      return await this.messageRepository.createMessage({
+        userId: AIProject.userId,
+        AImodelId: AIProject.ModelId,
+        output: this.contentFormatter.format(output),
+        isIA: true,
+        projectId,
+      });
     } catch (error) {
       console.log(error);
-      if (error instanceof Error) throw new Error(error.message);
       throw new Error("Something went wrong with message");
     }
   }
