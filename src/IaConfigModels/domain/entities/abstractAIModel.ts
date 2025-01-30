@@ -1,3 +1,11 @@
+import { prototype } from "events";
+import {
+  DefaultOutputStrategy,
+  OutputStrategy,
+} from "../../infrastructure/ports/Strategy/StategyOutPut";
+import { SSEService } from "../../../users/application/services/SSEService";
+import { IARequestContext } from "./ProjectAI";
+
 export interface AIModelInput {
   [key: string]: any;
 }
@@ -11,13 +19,10 @@ export interface AIModelConfig {
   [key: string]: unknown;
 }
 
-export interface AIModelInput {
-  prompt: string;
-  config?: AIModelConfig;
-}
-
 export abstract class AbstractAIModel {
   constructor(
+    protected outputStrategy: OutputStrategy = new DefaultOutputStrategy(),
+    protected readonly sseService: SSEService,
     protected readonly organization: string,
     protected readonly modelName: string
   ) {}
@@ -25,13 +30,11 @@ export abstract class AbstractAIModel {
   protected abstract prepareInput(input: AIModelInput): Record<string, unknown>;
 
   abstract generate(
-    prompt: string,
+    context: IARequestContext,
     config?: AIModelConfig
   ): Promise<AIModelOutput>;
 
   protected abstract executeModel(input: AIModelInput): Promise<AIModelOutput>;
-
-  protected abstract stream(input: AIModelInput): Promise<AIModelOutput>;
 
   protected getModelString(): string {
     return `${this.organization}/${this.modelName}`;
