@@ -28,8 +28,8 @@ export class server {
   private middleware(): void {
     this.app.use(
       cors({
-        origin: "http://localhost:5173", // Your frontend URL
-        credentials: true, // Important! This enables Access-Control-Allow-Credentials
+        origin: "http://localhost:5173", 
+        credentials: true, 
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       })
     );
