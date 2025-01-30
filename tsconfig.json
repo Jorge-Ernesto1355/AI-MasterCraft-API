@@ -2,6 +2,9 @@
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     /* Projects */
     // "incremental": true,
     // "composite": true,

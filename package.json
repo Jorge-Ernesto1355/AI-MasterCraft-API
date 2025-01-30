@@ -39,7 +39,15 @@
   "dependencies": {
     "body-parser": "^1.20.2",
     "crypto": "^1.0.1",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.4.2",
     "mongoose-paginate-v2": "^1.8.3",
-    "replicate": "^0.32.0"
+    "nanoid": "^5.0.9",
+    "rate-limit-redis": "^4.2.0",
+    "reflect-metadata": "^0.2.2",
+    "replicate": "^0.32.0",
+    "tsyringe": "^4.8.0",
+    "zod": "^3.24.1"
   }
 }
