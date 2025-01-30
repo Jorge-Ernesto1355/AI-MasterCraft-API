@@ -1,4 +1,5 @@
 import { CreateProjectAI } from "./CreateProjectAI";
+import EditConfigProject from "./EditConfigProject";
 import { GenerateIA } from "./GenerateIA";
 import { GetAvailableIA } from "./GetAvailableIA";
 import { GetIAById } from "./GetIAById";
@@ -12,7 +13,8 @@ const generateIA = new GenerateIA();
 const getProjects = new GetProjects();
 const getAvailableIA = new GetAvailableIA();
 const getMessages = new GetMessages();
-const searchModelByName = new SearchModelByName()
+const searchModelByName = new SearchModelByName();
+const editConfigProject = new EditConfigProject();
 export {
   getById,
   createProjectAI,
@@ -20,5 +22,6 @@ export {
   getProjects,
   getAvailableIA,
   getMessages,
-  searchModelByName
+  searchModelByName,
+  editConfigProject,
 };
