@@ -1,4 +1,7 @@
+import { container } from "tsyringe";
 import { ReplicateAdapter } from "../../infrastructure/ports/ReplicateAdapter";
+import { IARequestContext } from "./ProjectAI";
+import Replicate from "replicate";
 
 export interface IAModelDTO {
   id?: string;
@@ -26,13 +29,18 @@ export class IAModel {
     this.imageUrl = props.imageUrl;
   }
 
-  async run(prompt: string) {
-    const replicateAdapter = new ReplicateAdapter(
+  async run(context: IARequestContext) {
+    const replicateAdapterFactory = container.resolve<
+      (organization: string, modelName: string) => ReplicateAdapter
+    >("ReplicateAdapterFactory");
+    const replicateAdapter = replicateAdapterFactory(
       this.organization,
       this.modelName
     );
 
-    return replicateAdapter.generate(prompt, this.config);
+    const output = await replicateAdapter.generate(context, this.config);
+
+    return output;
   }
 
   public toJSON(): IAModelDTO {
