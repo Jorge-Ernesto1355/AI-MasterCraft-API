@@ -1,12 +1,12 @@
 import { NotFoundUser, NotFoundUserMsg } from "../ErrorsUser";
 import { userRepository as IUserRepository } from "../interfaces/userRepository.interface";
 import { User } from "../entities/User";
-
+import { inject, injectable } from "tsyringe";
+@injectable()
 export class userRepository implements IUserRepository {
-  private repository: IUserRepository;
-  constructor(repository: IUserRepository) {
-    this.repository = repository;
-  }
+  constructor(
+    @inject("UserMongoRepository") private readonly repository: IUserRepository
+  ) {}
   create(
     email: string,
     username: string,
