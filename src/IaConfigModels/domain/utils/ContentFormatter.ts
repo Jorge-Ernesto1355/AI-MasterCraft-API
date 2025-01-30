@@ -16,6 +16,9 @@ class ContentFormatter {
     this.processors = [
       this.processArray,
       this.contentFormatterCode.proccesor.bind(this.contentFormatterCode),
+      this.proccessImageOutput,
+      this.processAudioOutput,
+      this.processVideoOutput,
       this.processStringOutput,
       this.processDefault,
     ];
@@ -58,6 +61,92 @@ class ContentFormatter {
         "type" in item &&
         "data" in item
     );
+  }
+
+  private proccessImageOutput(output: AIModelOutput): IContent[] | Error {
+    if (
+      !(typeof output === "object" && output !== null && "output" in output)
+    ) {
+      return new NotProcessed("image output not processed");
+    }
+
+    if (typeof output.output !== "string") {
+      return new NotProcessed("image output not processed");
+    }
+
+    const imageUrlRegex =
+      /^https?:\/\/.*\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/i;
+
+    // Check if the URL matches image file extensions
+    if (imageUrlRegex.test(output.output)) {
+      return [
+        {
+          type: "image",
+          data: output.output,
+        },
+      ];
+    }
+
+    return new NotProcessed("image output not processed");
+  }
+  private processAudioOutput(output: AIModelOutput): IContent[] | Error {
+    // Check if output is an object with an 'output' property
+    if (
+      !(typeof output === "object" && output !== null && "output" in output)
+    ) {
+      return new NotProcessed("audio output not processed");
+    }
+
+    // Ensure output is a string
+    if (typeof output.output !== "string") {
+      return new NotProcessed("audio output not processed");
+    }
+
+    // Regular expression to match common audio file extensions
+    const audioUrlRegex =
+      /^https?:\/\/.*\.(mp3|wav|ogg|flac|aac|m4a|webm|opus)(\?.*)?$/i;
+
+    // Check if the URL matches audio file extensions
+    if (audioUrlRegex.test(output.output)) {
+      return [
+        {
+          type: "audio",
+          data: output.output,
+        },
+      ];
+    }
+
+    return new NotProcessed("audio output not processed");
+  }
+
+  private processVideoOutput(output: AIModelOutput): IContent[] | Error {
+    // Check if output is an object with an 'output' property
+    if (
+      !(typeof output === "object" && output !== null && "output" in output)
+    ) {
+      return new NotProcessed("video output not processed");
+    }
+
+    // Ensure output is a string
+    if (typeof output.output !== "string") {
+      return new NotProcessed("video output not processed");
+    }
+
+    // Regular expression to match common video file extensions
+    const videoUrlRegex =
+      /^https?:\/\/.*\.(mp4|avi|mov|wmv|flv|webm|mkv|m4v|mpeg|mpg)(\?.*)?$/i;
+
+    // Check if the URL matches video file extensions
+    if (videoUrlRegex.test(output.output)) {
+      return [
+        {
+          type: "video",
+          data: output.output,
+        },
+      ];
+    }
+
+    return new NotProcessed("video output not processed");
   }
 }
 
