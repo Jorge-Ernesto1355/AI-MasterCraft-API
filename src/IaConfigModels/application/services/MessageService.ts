@@ -1,7 +1,5 @@
-import { set } from "mongoose";
 import { SSEService } from "../../../users/application/services/SSEService";
-import { MessageDTO } from "../../domain/entities/Message";
-import { IA_NOT_FOUND, IA_NOT_FOUND_MSG } from "../../domain/IAErrors";
+
 import { IARepository } from "../../domain/interfaces/IARepository.interface";
 import {
   GetMessagesInput,
@@ -11,6 +9,8 @@ import {
 import ContentFormatter from "../../domain/utils/ContentFormatter";
 import { PaginatedMessage } from "../../infrastructure/persistence/messageMongoRepository";
 import { inject, injectable } from "tsyringe";
+import dotenv from "dotenv";
+import { PromptImprover } from "./PromptImprover";
 
 @injectable()
 export class MessageService implements messageRepository {
@@ -72,6 +72,19 @@ export class MessageService implements messageRepository {
     } catch (error) {
       console.log(error);
       throw new Error("Something went wrong with message");
+    }
+  }
+
+  async improvePrompt(prompt: string): Promise<string | undefined> {
+    try {
+      dotenv.config();
+
+      const improver = new PromptImprover(process.env.HUGGINGFACE_API_KEY);
+      const result = await improver.improvePrompt(prompt);
+      return result || prompt;
+    } catch (error) {
+      console.log(error);
+      return undefined;
     }
   }
 

@@ -1,5 +1,5 @@
 import { AIModelOutput } from "../../../domain/entities/abstractAIModel";
-import { MessageDTO } from "../../../domain/entities/Message";
+
 import { IContent } from "../../persistence/Message";
 
 export interface OutputStrategy {

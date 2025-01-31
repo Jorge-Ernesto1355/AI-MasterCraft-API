@@ -9,7 +9,7 @@ export const AIResponseConfigurations = {
     top_k: 50,
     presence_penalty: 0,
     frequency_penalty: 0,
-    stop_sequences: ["\\n\\n", "Human:"],
+    stop_sequences: "\\n\\n|Human:", // Combined with pipe delimiter
   },
   concise: {
     system_prompt:
@@ -21,7 +21,7 @@ export const AIResponseConfigurations = {
     top_k: 30,
     presence_penalty: 0.3,
     frequency_penalty: 0.2,
-    stop_sequences: ["."],
+    stop_sequences: ".",
   },
   formal: {
     system_prompt:
@@ -33,7 +33,7 @@ export const AIResponseConfigurations = {
     top_k: 20,
     presence_penalty: 0.4,
     frequency_penalty: 0.3,
-    stop_sequences: ["\\n", "References:"],
+    stop_sequences: "\\n|References:",
   },
   explanatory: {
     system_prompt:
@@ -45,7 +45,7 @@ export const AIResponseConfigurations = {
     top_k: 80,
     presence_penalty: 0.1,
     frequency_penalty: 0.1,
-    stop_sequences: ["\\n\\n\\n", "In conclusion:"],
+    stop_sequences: "\\n\\n\\n|In conclusion:",
   },
   creative: {
     system_prompt:
@@ -57,7 +57,7 @@ export const AIResponseConfigurations = {
     top_k: 100,
     presence_penalty: 0.5,
     frequency_penalty: 0.4,
-    stop_sequences: ["---", "Alternative perspective:"],
+    stop_sequences: "---|Alternative perspective:",
   },
   technical: {
     system_prompt:
@@ -69,7 +69,7 @@ export const AIResponseConfigurations = {
     top_k: 40,
     presence_penalty: 0.2,
     frequency_penalty: 0.3,
-    stop_sequences: ["```", "Key parameters:"],
+    stop_sequences: "```|Key parameters:",
   },
 };
 

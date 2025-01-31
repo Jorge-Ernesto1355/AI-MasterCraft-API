@@ -11,7 +11,7 @@ import { IARepository } from "./interfaces/IARepository.interface";
 import { AIService } from "./interfaces/IAServices.interface";
 import { Project } from "./interfaces/Project.interface";
 import { typeConfig } from "../infrastructure/persistence/AIResponseConfiguration";
-
+import { HfInference } from "@huggingface/inference";
 export interface createMessageProps {
   user: UserDTO | null;
   AImodel: IAModelDTO | null;
