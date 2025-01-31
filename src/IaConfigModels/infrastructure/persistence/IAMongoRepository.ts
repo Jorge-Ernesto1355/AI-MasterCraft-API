@@ -131,7 +131,7 @@ export class IAMongoRepository implements IARepository {
   ): Promise<void | Error> {
     try {
       const project = await projectIASchema.findById(projectId);
-      console.log(project);
+     
       if (!project) throw new IA_NOT_FOUND(IA_NOT_FOUND_MSG);
 
       const AIconfig = AIResponseConfigurations[typeConfig];
