@@ -3,7 +3,9 @@ import { model, Schema, Document, PaginateModel } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 
 export interface IContent {
-  type: "text" | "image" | "audio" | "video" | "file";
+  type: "text" | "image" | "audio" | "video" | "file" | "code";
+  language?: string;
+  framework?: string;
   data: string;
   mimeTypee?: "string";
 }
