@@ -28,8 +28,8 @@ export class server {
   private middleware(): void {
     this.app.use(
       cors({
-        origin: "http://localhost:5173", 
-        credentials: true, 
+        origin: "http://localhost:5173",
+        credentials: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       })
     );
@@ -47,11 +47,11 @@ export class server {
           encoding: string
         ) => {
           try {
-            JSON.parse(buf.toString(encoding as BufferEncoding)); // Verificar si el JSON es válido
+            JSON.parse(buf.toString(encoding as BufferEncoding));
           } catch (e) {
             res.statusCode = 400;
-            res.end("Invalid JSON"); // Responder con 400 si el JSON es inválido
-            throw new Error("Invalid JSON"); // Lanzar un error si el JSON es inválido
+            res.end("Invalid JSON");
+            throw new Error("Invalid JSON");
           }
         },
       })
