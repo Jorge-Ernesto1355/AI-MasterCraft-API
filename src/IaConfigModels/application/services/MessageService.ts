@@ -11,6 +11,7 @@ import { PaginatedMessage } from "../../infrastructure/persistence/messageMongoR
 import { inject, injectable } from "tsyringe";
 import dotenv from "dotenv";
 import { PromptImprover } from "./PromptImprover";
+import { StreamingContentFormatter } from "../../domain/utils/StreamingContentFormatter";
 
 @injectable()
 export class MessageService implements messageRepository {
@@ -70,21 +71,24 @@ export class MessageService implements messageRepository {
         projectId,
       });
     } catch (error) {
-      console.log(error);
       throw new Error("Something went wrong with message");
     }
   }
 
-  async improvePrompt(prompt: string): Promise<string | undefined> {
+  async improvePrompt(prompt: string): Promise<string | Error> {
     try {
       dotenv.config();
 
       const improver = new PromptImprover(process.env.HUGGINGFACE_API_KEY);
       const result = await improver.improvePrompt(prompt);
-      return result || prompt;
+      console.log(result);
+      if (result instanceof Error) return prompt;
+      return result;
     } catch (error) {
-      console.log(error);
-      return undefined;
+      if (error instanceof Error) {
+        return new Error("Error in improvePrompt: " + error.message);
+      }
+      throw new Error("Error in improvePrompt: " + error);
     }
   }
 
