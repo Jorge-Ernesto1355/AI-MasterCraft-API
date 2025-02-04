@@ -1,9 +1,9 @@
 export interface IContent {
   type: "text" | "image" | "audio" | "video" | "file" | "code";
   data: string;
-  mimeTypee?: "string";
+  mimeTypee?: string;
   language?: string;
-  framework?: string
+  framework?: string;
 }
 
 export interface Message {
