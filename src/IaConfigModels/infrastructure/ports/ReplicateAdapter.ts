@@ -13,6 +13,7 @@ import dotenv from "dotenv";
 import { inject, injectable } from "tsyringe";
 import { SSEService } from "../../../users/application/services/SSEService";
 import { IARequestContext } from "../../domain/entities/ProjectAI";
+import { StreamingContentFormatter } from "../../domain/utils/StreamingContentFormatter";
 
 dotenv.config();
 @injectable()
@@ -95,6 +96,7 @@ export class ReplicateAdapter {
     const output = this.replicate.stream(this.getModelString(), {
       input: preparedInput,
     });
+    const contentFormatter = new StreamingContentFormatter();
 
     let contentArray: string = "";
     let lastChunk: string = "";
@@ -108,16 +110,24 @@ export class ReplicateAdapter {
 
           if (parsedChunk) {
             contentArray = contentArray + parsedChunk.data;
-            lastChunk = parsedChunk.data; // Store the last chunk separately
+
+            lastChunk = parsedChunk.data;
+            const formattedContent = contentFormatter.processChunk(
+              parsedChunk.data
+            );
+
             await this.sseService?.sendAIProgress(
               input.userId,
               1,
-              parsedChunk.data
+              JSON.stringify(formattedContent)
             );
           }
         },
         close: async () => {
-          await this.sseService?.sendAIComplete(input.userId, lastChunk); // Send only the last chunk
+          await this.sseService?.sendAIComplete(
+            input.userId,
+            JSON.stringify(contentFormatter.processChunk(lastChunk))
+          ); // Send only the last chunk
           isComplete = true;
         },
       })
