@@ -1,3 +1,5 @@
+// import { Response } from "express";
+
 interface ChunkCallback {
   (chunk: string): void;
 }
@@ -28,6 +30,21 @@ Requirements:
 DO NOT include explanations, notes, or any text besides the improved prompt in the required format.`;
   }
 
+  private extractContentFromChunk(chunkData: string): string {
+    try {
+      // Parse the JSON data
+      const data = JSON.parse(chunkData);
+
+      // Extract the content from the delta object in the first choice
+      const content = data.choices[0]?.delta?.content || "";
+
+      return content;
+    } catch (error) {
+      console.error("Error parsing chunk data:", error);
+      return "";
+    }
+  }
+
   private extractImprovedPrompt(content: string): string | Error {
     const match = content.match(/improved_prompt:\s*"([^"]+)"/);
     return match ? match[1] : new Error("Improved prompt not found");
@@ -48,10 +65,10 @@ DO NOT include explanations, notes, or any text besides the improved prompt in t
             messages: [
               {
                 role: "user",
-                content: this.createPromptTemplate(prompt),
+                content: "test",
               },
             ],
-            stream: false,
+            stream: true,
             max_tokens: 500,
           }),
         }
@@ -61,9 +78,20 @@ DO NOT include explanations, notes, or any text besides the improved prompt in t
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
+      if (!response.body) throw new Error("No body in response");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        const parsedChunk = this.extractContentFromChunk(chunk);
+      }
+
       const data = await response.json();
       const content = data.choices[0]?.message?.content || "";
-      console.log(content);
+
       return this.extractImprovedPrompt(content);
     } catch (error) {
       console.log(error);
@@ -72,5 +100,39 @@ DO NOT include explanations, notes, or any text besides the improved prompt in t
       }
       throw error;
     }
+  }
+
+  private async crateReadableStream(
+    apiResponse: Response
+  ): Promise<ReadableStream> {
+    if (!apiResponse.body) throw new Error("no body in response");
+
+    const reader = apiResponse.body.getReader();
+    const decoder = new TextDecoder();
+    const self = this;
+
+    return new ReadableStream({
+      async start(controller) {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            const parsedChunk = self.extractContentFromChunk(chunk);
+            if (!parsedChunk) continue;
+            const event = new TextEncoder().encode(
+              `data: ${JSON.stringify(parsedChunk)}\n\n`
+            );
+            controller.enqueue(event);
+          }
+          controller.close();
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+      cancel() {
+        reader.cancel();
+      },
+    });
   }
 }
