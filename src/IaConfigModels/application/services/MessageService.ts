@@ -1,5 +1,4 @@
-import { SSEService } from "../../../users/application/services/SSEService";
-
+import "reflect-metadata";
 import { IARepository } from "../../domain/interfaces/IARepository.interface";
 import {
   GetMessagesInput,
@@ -8,18 +7,16 @@ import {
 } from "../../domain/interfaces/messageRepository.interface";
 import ContentFormatter from "../../domain/utils/ContentFormatter";
 import { PaginatedMessage } from "../../infrastructure/persistence/messageMongoRepository";
-import { inject, injectable } from "tsyringe";
+import { container, inject, injectable } from "tsyringe";
 import dotenv from "dotenv";
 import { PromptImprover } from "./PromptImprover";
-import { StreamingContentFormatter } from "../../domain/utils/StreamingContentFormatter";
 
+dotenv.config();
 @injectable()
 export class MessageService implements messageRepository {
   private contentFormatter: ContentFormatter;
 
   constructor(
-    @inject("SSEService") private readonly sseService: SSEService,
-
     @inject("messageRepository")
     private readonly messageRepository: messageRepository,
 
@@ -75,20 +72,12 @@ export class MessageService implements messageRepository {
     }
   }
 
-  async improvePrompt(prompt: string): Promise<string | Error> {
+  async improvePrompt(prompt: string, userId: string) {
     try {
-      dotenv.config();
-
-      const improver = new PromptImprover(process.env.HUGGINGFACE_API_KEY);
-      const result = await improver.improvePrompt(prompt);
-      console.log(result);
-      if (result instanceof Error) return prompt;
-      return result;
+      const improver = container.resolve(PromptImprover);
+      await improver.improvePrompt(prompt, userId);
     } catch (error) {
-      if (error instanceof Error) {
-        return new Error("Error in improvePrompt: " + error.message);
-      }
-      throw new Error("Error in improvePrompt: " + error);
+      throw new Error("Error in improvePrompt:" + error);
     }
   }
 
