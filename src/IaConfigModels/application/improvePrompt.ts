@@ -5,11 +5,11 @@ export default class improvePrompt {
   public async run(req: Request, res: Response) {
     try {
       const { prompt } = req.body;
+      const { userId } = req.params;
+
       const validatedPrompt = this.validatePrompt(prompt);
-      const improved_prompt = await messageService.improvePrompt(
-        validatedPrompt
-      );
-      return res.status(200).json({ prompt: improved_prompt });
+
+      await messageService.improvePrompt(validatedPrompt, userId);
     } catch (error) {
       this.handleError(error, res);
     }
