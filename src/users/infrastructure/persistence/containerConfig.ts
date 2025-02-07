@@ -19,7 +19,16 @@ import {
 import { ReplicateAdapter } from "../../../IaConfigModels/infrastructure/ports/ReplicateAdapter";
 import { IEventEmitter } from "../../domain/services/IEventEmitter";
 import { IClientRepository } from "../../domain/repositories/IClientRepository";
+import { PromptImprover } from "../../../IaConfigModels/application/services/PromptImprover";
+import dotenv from "dotenv";
+dotenv.config();
+const config = {
+  apiKey: process.env.HUGGINGFACE_API_KEY,
+  apiUrl:
+    "https://huggingface.co/api/inference-proxy/together/v1/chat/completions",
+};
 
+container.register("improvePromptConfig", { useValue: config });
 container.register("RedisConfig", { useValue: defaultRedisConfig });
 
 container.register("Logger", { useClass: Logger });
@@ -39,6 +48,10 @@ container.register<IClientRepository>("IClientRepository", {
 
 container.register<SSEService>("SSEService", {
   useClass: SSEService,
+});
+
+container.register<PromptImprover>("PromptImprover", {
+  useClass: PromptImprover,
 });
 
 container.register<messageRepository>("messageRepository", {
