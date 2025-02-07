@@ -16,6 +16,9 @@ MessageRouter.get(
   getMessages.run.bind(getMessages)
 );
 
-MessageRouter.post("/improvePrompt", ImprovePrompt.run.bind(ImprovePrompt));
+MessageRouter.post(
+  "/improvePrompt/:userId",
+  ImprovePrompt.run.bind(ImprovePrompt)
+);
 
 export default MessageRouter;
