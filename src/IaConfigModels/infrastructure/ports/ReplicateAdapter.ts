@@ -14,6 +14,7 @@ import { inject, injectable } from "tsyringe";
 import { SSEService } from "../../../users/application/services/SSEService";
 import { IARequestContext } from "../../domain/entities/ProjectAI";
 import { StreamingContentFormatter } from "../../domain/utils/StreamingContentFormatter";
+import { MediatypeDetectorFactory } from "../../domain/utils/ContentMediaType";
 
 dotenv.config();
 @injectable()
@@ -59,11 +60,14 @@ export class ReplicateAdapter {
 
     if (this.shouldUseStreaming()) {
       const streamingOutput = await this.streamWithRetry(input);
-
       return streamingOutput;
     }
 
+    const mediaDetector = MediatypeDetectorFactory.createDefaultDtector();
     const rawOutput = await this.executeModel(input);
+    const contentType = mediaDetector.detect(rawOutput.output);
+    const sendObject = [{ data: rawOutput.output, type: contentType }];
+    this.sseService?.sendAIComplete(input.userId, JSON.stringify(sendObject));
 
     return await this.outputStrategy.processOutput(rawOutput as any);
   }
@@ -96,6 +100,7 @@ export class ReplicateAdapter {
     const output = this.replicate.stream(this.getModelString(), {
       input: preparedInput,
     });
+
     const contentFormatter = new StreamingContentFormatter();
 
     let contentArray: string = "";
