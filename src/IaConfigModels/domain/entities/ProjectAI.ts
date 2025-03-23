@@ -20,12 +20,11 @@ export interface IARequestContext {
 class ProjectIa {
   private readonly model: IAModel;
   private readonly config: ProjectIaConfig;
-  _id: any;
 
   constructor(config: ProjectIaConfig) {
     this.config = config;
     this.model = new IAModel({
-      id: config._id,
+      id: config.modelId,
       modelName: config.modelName,
       modelType: config.modelType,
       organization: config.organization,
