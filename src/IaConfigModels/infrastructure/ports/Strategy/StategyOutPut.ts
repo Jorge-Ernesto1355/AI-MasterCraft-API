@@ -79,7 +79,6 @@ export class streamingOutputStrategy implements OutputStrategy {
 
       return null;
     } catch (error) {
-      console.error("Error parsing SSE chunk:", error);
       return null;
     }
   }
