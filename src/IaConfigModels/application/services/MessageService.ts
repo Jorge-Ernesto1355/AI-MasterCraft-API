@@ -10,6 +10,8 @@ import { PaginatedMessage } from "../../infrastructure/persistence/messageMongoR
 import { container, inject, injectable } from "tsyringe";
 import dotenv from "dotenv";
 import { PromptImprover } from "./PromptImprover";
+import { SSEService } from "../../../users/application/services/SSEService";
+import { StreamingContentFormatter } from "../../domain/utils/StreamingContentFormatter";
 
 dotenv.config();
 @injectable()
@@ -19,7 +21,7 @@ export class MessageService implements messageRepository {
   constructor(
     @inject("messageRepository")
     private readonly messageRepository: messageRepository,
-
+    @inject("SSEService") private readonly sservice: SSEService,
     @inject("IARepository") private readonly IArepository: IARepository
   ) {
     this.contentFormatter = new ContentFormatter();
@@ -44,32 +46,28 @@ export class MessageService implements messageRepository {
     }
   }
   async generateIAMessage(projectId: string, prompt: string) {
-    try {
-      const AIProject = await this.IArepository.getIAById(projectId);
-      if (AIProject instanceof Error) throw new Error("Project not found");
-      const output = await AIProject.run({
-        userId: AIProject.userId,
-        prompt: prompt,
-      });
+    const AIProject = await this.IArepository.getIAById(projectId);
+    if (AIProject instanceof Error) throw new Error("Project not found");
+    const output = await AIProject.run({
+      userId: AIProject.userId,
+      prompt: prompt,
+    });
 
-      await this.messageRepository.createMessage({
-        userId: AIProject.userId,
-        AImodelId: AIProject.ModelId,
-        output: this.contentFormatter.format({ output: prompt }),
-        isIA: false,
-        projectId,
-      });
+    await this.messageRepository.createMessage({
+      userId: AIProject.userId,
+      AImodelId: AIProject.ModelId,
+      output: this.contentFormatter.format({ output: prompt }),
+      isIA: false,
+      projectId,
+    });
 
-      return await this.messageRepository.createMessage({
-        userId: AIProject.userId,
-        AImodelId: AIProject.ModelId,
-        output: this.contentFormatter.format(output),
-        isIA: true,
-        projectId,
-      });
-    } catch (error) {
-      throw new Error("Something went wrong with message");
-    }
+    return await this.messageRepository.createMessage({
+      userId: AIProject.userId,
+      AImodelId: AIProject.ModelId,
+      output: this.contentFormatter.format(output),
+      isIA: true,
+      projectId,
+    });
   }
 
   async improvePrompt(prompt: string, userId: string) {
