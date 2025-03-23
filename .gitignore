@@ -3,3 +3,4 @@ backend/src/.env
 .env
 build
 nodemon.json
+.qodo
